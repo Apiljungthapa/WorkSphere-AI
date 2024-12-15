@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Submission Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            --hover-gradient: linear-gradient(135deg, #5a0fcb 0%, #1565fc 100%);
+            --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            --danger-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+        }
+        
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff 0%, #e0e7ff 100%);
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            padding-top: 3rem;
+        }
+
+        .back-button {
+            padding: 0.5rem 1rem;
+            background-color: #e41d2c;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            position: absolute;
+            top: 8rem;
+            left: 11rem;
+        }
+
+        .back-button:hover {
+            background-color: #1d794e;
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button i {
+            margin-right: 0.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-header {
+            background-color: #f9fafb;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        textarea:focus {
+            border-color: #6a11cb;
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background: var(--hover-gradient);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button i {
+            margin-right: 0.5rem;
+        }
+
+        .task-list,
+        .assigned-tasks {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .task-item,
+        .assigned-task {
+            background-color: #9be9cf;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-gradient);
+        }
+
+        .task-item:hover,
+        .assigned-task:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .task-info,
+        .assigned-task-info {
+            margin-bottom: 1rem;
+        }
+
+        .task-info h3,
+        .assigned-task-info h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-info p,
+        .assigned-task-info p {
+            font-size: 0.875rem;
+            color: #4b5563;
+            margin-bottom: 0.25rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgb(2, 0, 0);
+            border-radius: 9999px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 0.5rem;
+        }
+
+        .badge-pending {
+            background: var(--warning-gradient);
+        }
+
+        .badge-completed {
+            background: var(--success-gradient);
+        }
+
+        .badge-late {
+            background: var(--danger-gradient);
+        }
+
+        .badge i {
+            margin-right: 0.25rem;
+        }
+
+        .task-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .assigned-task p {
+            display: flex;
+            align-items: center;
+        }
+
+        .assigned-task p strong {
+            margin-right: 0.25rem;
+        }
+
+        .assigned-task i {
+            margin-right: 0.25rem;
+            color: #6b7280;
+        }
+
+        @media (min-width: 640px) {
+            .container {
+                padding: 2rem;
+                padding-top: 4rem;
+                
+            }
+
+            .back-button {
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+                top: 8rem;
+                left: 11rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .card-header,
+            .card-content {
+                padding: 1.5rem 2rem;
+            }
+
+            .task-item,
+            .assigned-task {
+                flex-direction: row;
+                align-items: center;
+            }
+
+            .task-info,
+            .assigned-task-info {
+                margin-bottom: 0;
+                flex: 1;
+            }
+
+            .task-actions {
+                margin-left: 1rem;
+            }
+
+            button {
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+            }
+
+            label {
+                font-size: 1rem;
+            }
+
+            input[type="text"],
+            input[type="date"],
+            textarea {
+                font-size: 1rem;
+                padding: 0.75rem 1rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                padding: 3rem;
+                padding-top: 5rem;
+            }
+
+            .task-list,
+            .assigned-tasks {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <a href="/assignment" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+
+        <header>
+            <h1>Task Updation Portal</h1>
+            <p>Update and manage your tasks efficiently.</p>
+        </header>
+
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Submit New Task</h2>
+            </div>
+            <div class="card-content">
+                <form method="post" action="/submit_update" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <input type="hidden" name="task_id" value="{{ task_id }}">
+                        <label for="task_title">Assigned Task Name</label>
+                        <input type="text" id="task_title" name="task_title" value="{{ task_title }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Your Updated Description For Task</label>
+                        <textarea id="description" name="description" rows="3" required>{{ task_description }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="file">Re-Upload File (if any)</label>
+                        {% if previous_docs_path %}
+                            <p>Previous file: <a href="{{ previous_docs_path }}" target="_blank">{{ previous_docs_path.split('/')[-1] }}</a></p>
+                        {% endif %}
+                        <input type="file" id="file" name="file">
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-upload"></i> Re-Submit Task
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+</body>
+
+</html>

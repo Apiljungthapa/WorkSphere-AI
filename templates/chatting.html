@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram-like Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .chat-container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+        .chat-header {
+            background: #f3f4f6;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .chat-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+        .chat-header-info h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .chat-header-info p {
+            font-size: 14px;
+            color: #666;
+        }
+        .messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .message {
+            max-width: 70%;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.4;
+            font-size: 14px;
+            clear: both;
+        }
+        .message.sent {
+            float: right;
+            background-color: #3b82f6;
+            color: white;
+        }
+        .message.received {
+            float: left;
+            background-color: #f3f4f6;
+        }
+        .message-time {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 5px;
+            clear: both;
+        }
+        .chat-input {
+            padding: 15px;
+            background: #f3f4f6;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+        }
+        .chat-input input {
+            flex-grow: 1;
+            border: none;
+            outline: none;
+            background: white;
+            border-radius: 20px;
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+        .chat-input button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .chat-input button:hover {
+            background: #2563eb;
+        }
+        .back-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            margin-right: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <a href="feed.html" class="back-button">←</a>
+            <img src="https://i.pravatar.cc/150?img=1" alt="Jane Doe">
+            <div class="chat-header-info">
+                <h2>Jane Doe</h2>
+                <p>Online</p>
+            </div>
+        </div>
+        <div class="messages">
+            <div class="message received">
+                <div class="message-content">Hi there! How's it going?</div>
+                <div class="message-time">10:30 AM</div>
+            </div>
+            <div class="message sent">
+                <div class="message-content">Hey! I'm doing well, thanks. How about you?</div>
+                <div class="message-time">10:32 AM</div>
+            </div>
+            <div class="message received">
+                <div class="message-content">I'm great! Just wanted to check in about the project. Any updates?</div>
+                <div class="message-time">10:35 AM</div>
+            </div>
+            <div class="message sent">
+                <div class="message-content">Yes, actually! I've just finished the first draft of the design. I'll send it over for your review in a bit.</div>
+                <div class="message-time">10:37 AM</div>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" placeholder="Type a message...">
+            <button>Send</button>
+        </div>
+    </div>
+</body>
+</html>

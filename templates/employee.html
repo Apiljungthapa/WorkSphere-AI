@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Management</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #e0e7ff 0%, #e0e7ff 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #333;
+      }
+      .container {
+        width: 100%;
+        max-width: 1000px;
+        margin: 1rem;
+        background: #ffffff;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+      header {
+        display: flex;
+        align-items: center;
+        background: #764ba2;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+      }
+      .back-button {
+        background: #ff6347;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 7px;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+      }
+      .back-button:hover {
+        background: #ff4c29;
+        transform: translateY(-2px);
+      }
+      .back-button i {
+        margin-right: 0.5rem;
+      }
+      h1 {
+        color: #fff;
+        flex: 1;
+        text-align: center;
+        font-size: 2rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 0;
+      }
+      .employee-list {
+        overflow-x: auto;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid #f0f0f0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      th,
+      td {
+        padding: 1rem;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+        color: #333;
+      }
+      th {
+        text-align: center;
+        background-color: #f8f9fa;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        color: #333;
+      }
+      tr:hover {
+        background-color: #fafafa;
+      }
+      .actions-cell {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+      }
+      .btn-action {
+        padding: 0.5rem;
+        font-size: 1rem;
+        border-radius: 50%;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s ease, transform 0.3s ease;
+        border: none;
+        cursor: pointer;
+      }
+      .btn-approve {
+        background: #4caf50;
+        color: #fff;
+      }
+      .btn-approve:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+      }
+      .btn-reject {
+        background: #dc3545;
+        color: #fff;
+      }
+      .btn-reject:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+      }
+      .employee-photo {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+          margin: 0.5rem;
+        }
+        h1 {
+          font-size: 1.5rem;
+        }
+        .back-button {
+          padding: 0.6rem 1.2rem;
+          font-size: 0.9rem;
+        }
+        table {
+          font-size: 0.9rem;
+        }
+        th,
+        td {
+          padding: 0.75rem;
+        }
+      }
+
+      @media (max-width: 640px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .back-button {
+          margin-bottom: 0.5rem;
+        }
+        h1 {
+          font-size: 1.25rem;
+          text-align: left;
+        }
+        table,
+        thead,
+        tbody,
+        th,
+        td,
+        tr {
+          display: block;
+        }
+        thead tr {
+          position: absolute;
+          top: -9999px;
+          left: -9999px;
+        }
+        tr {
+          align-items: center;
+          margin-bottom: 1rem;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          overflow: hidden;
+        }
+        td {
+          border: none;
+          position: relative;
+          padding-left: 50%;
+          text-align: right;
+        }
+        td:before {
+          content: attr(data-label);
+          position: absolute;
+          left: 6px;
+          width: 45%;
+          padding-right: 10px;
+          white-space: nowrap;
+          text-align: left;
+          font-weight: bold;
+        }
+        .actions-cell {
+          justify-content: flex-end;
+        }
+        .btn-action {
+          padding: 0.4rem;
+          font-size: 0.9rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          margin: 0;
+          border-radius: 0;
+        }
+        header {
+          border-radius: 0;
+        }
+        h1 {
+          font-size: 1.1rem;
+        }
+        .back-button {
+          padding: 0.5rem 1rem;
+          font-size: 0.8rem;
+        }
+        td {
+          font-size: 0.8rem;
+          padding-left: 40%;
+        }
+        .btn-action {
+          padding: 0.3rem;
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <a href="{{ url_for('fetch_details_employees') }}" class="back-button">
+          <i class="fas fa-arrow-left"></i> Back
+        </a>
+        
+        <h1>Onboard Hires</h1>
+      </header>
+      <div class="employee-list">
+        <table>
+          <thead>
+
+            <tr>
+              
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone Number</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr>
+                
+                <td data-label="Name">{{ user.full_name }}</td>
+                <td data-label="Email">{{ user.email }}</td>
+                <td data-label="Phone">{{ user.phone }}</td>
+                <td data-label="Actions" class="actions-cell">
+
+                  <a href="/edit/{{ user.user_id }}" class="btn-action btn-approve">
+                    <i class="fas fa-check"></i>
+                </a>
+
+
+                    <form method="post" action="/delete-user">
+                      <input type="hidden" name="user_id" value="{{ user.user_id }}">
+                      <button type="submit" class="btn-action btn-reject">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </form>
+                </td>
+
+            </tr>
+            {% endfor %}
+
+            
+          
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

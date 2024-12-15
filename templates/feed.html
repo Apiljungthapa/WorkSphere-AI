@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram-like Feed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #ffffff;
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            position: relative;
+        }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #4b5563;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .back-button:hover {
+            color: #3b82f6;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a202c;
+            text-align: center;
+        }
+        .search-bar {
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .search-bar:focus-within {
+            box-shadow: 0 0 0 2px #3b82f6;
+        }
+        .search-bar input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 16px;
+            background: transparent;
+            margin-left: 12px;
+            color: #4b5563;
+        }
+        .search-bar input::placeholder {
+            color: #9ca3af;
+        }
+        .contact-list {
+            padding: 16px;
+        }
+        .contact {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        .contact:hover {
+            background-color: #f9fafb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .contact img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 16px;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+        .contact-info {
+            flex-grow: 1;
+        }
+        .contact-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: #1f2937;
+        }
+        .contact-status {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: auto;
+        }
+        .online {
+            background-color: #10B981;
+            box-shadow: 0 0 0 2px #D1FAE5;
+        }
+        .offline {
+            background-color: #9CA3AF;
+            box-shadow: 0 0 0 2px #F3F4F6;
+        }
+        .search-icon {
+            color: #9ca3af;
+            transition: color 0.3s ease;
+        }
+        .search-bar:focus-within .search-icon {
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="emp_details.html" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1>Chats</h1>
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" placeholder="Search contacts...">
+            </div>
+        </div>
+        <div class="contact-list">
+            <a href="chatting.html?user=jane" class="contact">
+                <img src="https://i.pravatar.cc/150?img=1" alt="Jane Doe">
+                <div class="contact-info">
+                    <div class="contact-name">Jane Doe</div>
+                    <div class="contact-status">Last seen 5m ago</div>
+                </div>
+                <div class="status-indicator online"></div>
+            </a>
+            <a href="chatting.html?user=john" class="contact">
+                <img src="https://i.pravatar.cc/150?img=2" alt="John Smith">
+                <div class="contact-info">
+                    <div class="contact-name">John Smith</div>
+                    <div class="contact-status">Last seen 2h ago</div>
+                </div>
+                <div class="status-indicator offline"></div>
+            </a>
+            <a href="chatting.html?user=emily" class="contact">
+                <img src="https://i.pravatar.cc/150?img=3" alt="Emily Brown">
+                <div class="contact-info">
+                    <div class="contact-name">Emily Brown</div>
+                    <div class="contact-status">Last seen 1d ago</div>
+                </div>
+                <div class="status-indicator offline"></div>
+            </a>
+            <a href="chatting.html?user=michael" class="contact">
+                <img src="https://i.pravatar.cc/150?img=4" alt="Michael Johnson">
+                <div class="contact-info">
+                    <div class="contact-name">Michael Johnson</div>
+                    <div class="contact-status">Online</div>
+                </div>
+                <div class="status-indicator online"></div>
+            </a>
+            <a href="chatting.html?user=sarah" class="contact">
+                <img src="https://i.pravatar.cc/150?img=5" alt="Sarah Williams">
+                <div class="contact-info">
+                    <div class="contact-name">Sarah Williams</div>
+                    <div class="contact-status">Last seen 3h ago</div>
+                </div>
+                <div class="status-indicator offline"></div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

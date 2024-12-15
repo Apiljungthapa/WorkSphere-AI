@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Feedback Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #5660d2, #307373);
+            --secondary-color: #4a4a4a;
+            --background-color: #f5f7fa;
+            --form-background: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --success-color: #4CAF50;
+            --error-color: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #e0e7ff 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .form-container {
+            margin-top: 30px;
+            background-color: var(--form-background);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(223, 40, 40, 0.1);
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-button {
+            background: linear-gradient(135deg, #f87171, #ef4444); /* Beautiful gradient background */
+            border: none; /* Remove border */
+            border-radius: 12px; /* Rounded corners */
+            padding: 10px 20px; /* Padding for button */
+            display: inline-flex; /* Align items horizontally */
+            align-items: center; /* Center content vertically */
+            justify-content: center; /* Center content horizontally */
+            cursor: pointer; /* Pointer cursor on hover */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            transition: transform 0.3s, background 0.3s, box-shadow 0.3s; /* Smooth transitions */
+            margin-right: 20px; /* Added space between button and title */
+        }
+
+        .back-button:hover {
+            background: linear-gradient(135deg, #34d399, #10b981); /* Hover effect with different colors */
+            transform: scale(1.05); /* Slightly enlarge on hover */
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
+        }
+
+        .back-button a {
+            color: white; /* Text color */
+            text-decoration: none; /* Remove underline */
+            display: inline-flex; /* Align items horizontally */
+            align-items: center; /* Center content vertically */
+            font-size: 16px; /* Font size */
+            font-weight: 600; /* Font weight */
+        }
+
+        .back-button i {
+            margin-right: 8px; /* Space between icon and text */
+        }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .form-content {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #118a58, #307373);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: rgb(99, 2, 17);
+            opacity: 0.9;
+        }
+
+        .message {
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .error {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            .form-header {
+                background-color: #0e047c;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .back-button {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <div class="form-header">
+                <button class="back-button">
+                    <a href="dashboard.html" aria-label="Go back to dashboard">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </button>
+                <h1 class="form-title">Employee Feedback Form</h1>
+            </div>
+            <div class="form-content">
+                <form id="feedbackForm">
+                    <div class="form-group">
+                        <label for="name">Name:</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department:</label>
+                        <select id="department" name="department" required>
+                            <option value="">Select Department</option>
+                            <option value="hr">Human Resources</option>
+                            <option value="it">Information Technology</option>
+                            <option value="finance">Finance</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="operations">Operations</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="feedbackType">Feedback Type:</label>
+                        <select id="feedbackType" name="feedbackType" required>
+                            <option value="">Select Feedback Type</option>
+                            <option value="suggestion">Suggestion</option>
+                            <option value="complaint">Complaint</option>
+                            <option value="appreciation">Appreciation</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Feedback Message:</label>
+                        <textarea id="message" name="message" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Submit Feedback</button>
+                </form>
+                <div id="messageContainer" class="message" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('feedbackForm');
+            const messageContainer = document.getElementById('messageContainer');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Simulating form submission
+                setTimeout(() => {
+                    const success = Math.random() < 0.8; // 80% chance of success
+                    if (success) {
+                        showMessage('Feedback submitted successfully!', 'success');
+                        form.reset();
+                    } else {
+                        showMessage('Error submitting feedback. Please try again.', 'error');
+                    }
+                }, 1000);
+            });
+
+            function showMessage(message, type) {
+                messageContainer.textContent = message;
+                messageContainer.className = `message ${type}`;
+                messageContainer.style.display = 'block';
+
+                setTimeout(() => {
+                    messageContainer.style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>

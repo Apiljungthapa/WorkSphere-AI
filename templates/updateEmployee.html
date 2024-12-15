@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Update Employee </title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #e0e7ff 0%, #e0e7ff 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        width: 100%;
+        max-width: 600px;
+      }
+
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 32px;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      form {
+        display: grid;
+        gap: 20px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      label {
+        font-weight: 500;
+        color: #555;
+        font-size: 14px;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary {
+        background-color: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: #5a6fe0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11),
+          0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+
+      .btn-secondary {
+        background-color: #e9a2a2;
+        color: #0d0101;
+      }
+
+      .btn-secondary:hover {
+        background-color: #e0e0e0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11),
+          0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 30px;
+        }
+
+        h1 {
+          font-size: 28px;
+        }
+
+        .btn-group {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Update Employee</h1>
+      <form method="post" action="/update_personal_detail">
+          <input type="hidden" name="user_id" value="{{ user.user_id }}">
+  
+          <div class="form-group">
+              <label for="department">Department</label>
+              <select id="department" name="department" required>
+                  <option value="">Select New Department</option>
+                  <option value="Engineering" {% if user.department_name == 'Engineering' %}selected{% endif %}>Engineering</option>
+                  <option value="Marketing" {% if user.department_name == 'Marketing' %}selected{% endif %}>Marketing</option>
+                  <option value="Human Resources" {% if user.department_name == 'Human Resources' %}selected{% endif %}>Human Resources</option>
+                  <option value="Finance" {% if user.department_name == 'Finance' %}selected{% endif %}>Finance</option>
+                  <option value="Sales" {% if user.department_name == 'Sales' %}selected{% endif %}>Sales</option>
+              </select>
+          </div>
+  
+          <div class="form-group">
+              <label for="position">New Position</label>
+              <select id="position" name="position" required>
+                  <option value="junior_developer" {% if user.position == 'junior_developer' %}selected{% endif %}>Junior Developer</option>
+                  <option value="senior_developer" {% if user.position == 'senior_developer' %}selected{% endif %}>Senior Developer</option>
+                  <option value="head" {% if user.position == 'head' %}selected{% endif %}>Head</option>
+                  <option value="mid_level" {% if user.position == 'mid_level' %}selected{% endif %}>Mid Level</option>
+                  <option value="other" {% if user.position == 'other' %}selected{% endif %}>Other</option>
+              </select>
+          </div>
+  
+          <div class="btn-group">
+            <a href="{{ url_for('tracking_page') }}" class="btn btn-secondary" style="text-decoration: none">Cancel</a>
+
+
+
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+      </form>
+  </div>
+  
+  
+</body>
+
+</html>

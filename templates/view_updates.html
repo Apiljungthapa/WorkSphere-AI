@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Announcements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            position: relative;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .date-section {
+            margin-bottom: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .date-header {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px;
+            font-size: 1.2em;
+        }
+        .announcement {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .announcement:last-child {
+            border-bottom: none;
+        }
+        .announcement h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .priority-high {
+            border-left: 5px solid #e74c3c;
+        }
+        .priority-medium {
+            border-left: 5px solid #f39c12;
+        }
+        .priority-low {
+            border-left: 5px solid #2ecc71;
+        }
+        .priority-label {
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .priority-high .priority-label {
+            color: #e74c3c;
+        }
+        .priority-medium .priority-label {
+            color: #f39c12;
+        }
+        .priority-low .priority-label {
+            color: #2ecc71;
+        }
+        .back-link {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            background-color: #e74c3c;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .back-link:hover {
+            background-color: #c0392b;
+        }
+        .back-link:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.5);
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .announcement {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="dashboard.html" class="back-link" aria-label="Go back to previous page">Back</a>
+        <h1>Company Announcements</h1>
+        <div id="announcements-container">
+            <div class="date-section">
+                <div class="date-header">Thursday, June 15, 2023</div>
+                <div class="announcement priority-high">
+                    <div class="priority-label">high</div>
+                    <h3>Quarterly Meeting</h3>
+                    <p>Our Q2 meeting will be held next Friday at 2 PM.</p>
+                </div>
+                <div class="announcement priority-medium">
+                    <div class="priority-label">medium</div>
+                    <h3>New Project Launch</h3>
+                    <p>We're excited to announce the launch of Project X.</p>
+                </div>
+            </div>
+            
+            <div class="date-section">
+                <div class="date-header">Wednesday, June 14, 2023</div>
+                <div class="announcement priority-high">
+                    <div class="priority-label">high</div>
+                    <h3>Office Closure</h3>
+                    <p>The office will be closed for maintenance on June 20th.</p>
+                </div>
+                <div class="announcement priority-low">
+                    <div class="priority-label">low</div>
+                    <h3>Team Building Event</h3>
+                    <p>Join us for a team building event on June 25th.</p>
+                </div>
+            </div>
+            <div class="date-section">
+                <div class="date-header">Tuesday, June 13, 2023</div>
+                <div class="announcement priority-medium">
+                    <div class="priority-label">medium</div>
+                    <h3>IT System Update</h3>
+                    <p>IT systems will be updated on June 18th. Please save your work.</p>
+                </div>
+            </div>
+            <div class="date-section">
+                <div class="date-header">Monday, June 12, 2023</div>
+                <div class="announcement priority-low">
+                    <div class="priority-label">low</div>
+                    <h3>New Coffee Machine</h3>
+                    <p>A new coffee machine has been installed in the break room.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

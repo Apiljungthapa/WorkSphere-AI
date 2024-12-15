@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Anonymous Feedback</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --star-color: #fbbf24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--primary-gradient);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .feedback-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .feedback-card {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feedback-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rating {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .star {
+            color: var(--star-color);
+            font-size: 1.2rem;
+        }
+
+        .feedback-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-footer {
+            padding: 1rem;
+            text-align: right;
+            font-size: 0.9rem;
+            color: #6366f1;
+            font-weight: bold;
+        }
+
+        .chart-section {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        .chart-section h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #4b5563;
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .chart-item {
+            text-align: center;
+        }
+
+        .doughnut-chart {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(var(--chart-color) var(--percentage), #e5e7eb 0);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .doughnut-chart::before {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .chart-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+
+        git reset --hard e560215
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .feedback-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="dash.html" class="back-link">← Back to Dashboard</a>
+            <h1>Enhanced Anonymous Feedback</h1>
+            <p class="subtitle">Your voice shapes our future. Share your thoughts openly and honestly.</p>
+        </header>
+
+        <main>
+            <div class="feedback-grid">
+                <article class="feedback-card">
+                    <div class="card-header">
+                        <div class="rating" aria-label="5 out of 5 stars">
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                        </div>
+                        <span class="feedback-date">2 days ago</span>
+                    </div>
+                    <div class="card-content">
+                        <p>The recent changes to our project management system have significantly improved our team's productivity. The new features are intuitive and have streamlined our workflow. Great job to everyone involved!</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="feedback-id">FB001</span>
+                    </div>
+                </article>
+
+                <article class="feedback-card">
+                    <div class="card-header">
+                        <div class="rating" aria-label="4 out of 5 stars">
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" style="color: #e5e7eb;" aria-hidden="true">★</span>
+                        </div>
+                        <span class="feedback-date">1 week ago</span>
+                    </div>
+                    <div class="card-content">
+                        <p>The new client onboarding process is much better than before. However, there's still room for improvement in the documentation provided. Consider adding more detailed examples for complex scenarios.</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="feedback-id">FB002</span>
+                    </div>
+                </article>
+
+                <article class="feedback-card">
+                    <div class="card-header">
+                        <div class="rating" aria-label="5 out of 5 stars">
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                        </div>
+                        <span class="feedback-date">3 days ago</span>
+                    </div>
+                    <div class="card-content">
+                        <p>I'm impressed with the recent team building event. It boosted morale and improved communication between departments. These kinds of activities really make a difference in our work environment.</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="feedback-id">FB003</span>
+                    </div>
+                </article>
+
+                <article class="feedback-card">
+                    <div class="card-header">
+                        <div class="rating" aria-label="3 out of 5 stars">
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" aria-hidden="true">★</span>
+                            <span class="star" style="color: #e5e7eb;" aria-hidden="true">★</span>
+                            <span class="star" style="color: #e5e7eb;" aria-hidden="true">★</span>
+                        </div>
+                        <span class="feedback-date">5 days ago</span>
+                    </div>
+                    <div class="card-content">
+                        <p>The new software update has some great features, but it's also introduced a few bugs that are affecting our daily operations. Please prioritize fixing these issues in the next patch.</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="feedback-id">FB004</span>
+                    </div>
+                </article>
+            </div>
+
+            <section class="chart-section">
+                <h2>Sentiment Analysis</h2>
+                <div class="chart-container">
+                    <div class="chart-item">
+                        <div class="doughnut-chart" style="--percentage: 85%; --chart-color: #10b981;">
+                            <span>85%</span>
+                        </div>
+                        <p class="chart-label">Positive Feedback</p>
+                    </div>
+                    <div class="chart-item">
+                        <div class="doughnut-chart" style="--percentage: 65%; --chart-color: #f59e0b;">
+                            <span>65%</span>
+                        </div>
+                        <p class="chart-label">Neutral Feedback</p>
+                    </div>
+                    <div class="chart-item">
+                        <div class="doughnut-chart" style="--percentage: 50%; --chart-color: #ef4444;">
+                            <span>50%</span>
+                        </div>
+                        <p class="chart-label">Negative Feedback</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

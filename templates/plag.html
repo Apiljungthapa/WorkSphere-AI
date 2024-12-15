@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <title>Plagiarism Detector</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f39c12;
+            --background-color: #f0f4f8;
+            --card-background: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #e0e7ff 0%, #e0e7ff 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgb(5, 108, 5);
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #c9084d;
+            margin-bottom: 30px;
+        }
+
+        .upload-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            flex: 1 1 calc(50% - 20px);
+            margin: 10px;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+
+        .detect-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #874444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .detect-button:hover {
+            background-color: #541a23;
+        }
+
+        .result-area {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .result-title {
+            font-size: 24px;
+            color: #020202;
+            margin-bottom: 15px;
+        }
+
+        .similarity-score {
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--danger-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .highlight-area {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .highlight {
+            background-color: #9aeec0;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .back-button {
+                top: 10px;
+                left: 10px;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .upload-container {
+                flex-direction: column;
+            }
+
+            .upload-area {
+                flex: 1 1 100%;
+                margin: 10px 0;
+            }
+
+            .detect-button {
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            .result-title {
+                font-size: 20px;
+            }
+
+            .similarity-score {
+                font-size: 36px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 15px;
+            }
+
+            .back-button {
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+
+            h1 {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+
+            .upload-icon {
+                font-size: 36px;
+            }
+
+            .detect-button {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            .result-title {
+                font-size: 18px;
+            }
+
+            .similarity-score {
+                font-size: 28px;
+            }
+
+            .highlight-area {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <a href="dashboard.html" class="back-button">
+                <i class="fas fa-arrow-left"></i> &nbsp;  Back
+            </a>
+            <h1>Plagiarism Detector</h1>
+            <div class="upload-container">
+                <div class="upload-area" id="upload-area-1">
+                    <div class="upload-icon">&#128196;</div>
+                    <p>Upload Document 1</p>
+                    <input type="file" id="file-upload-1" hidden>
+                    <div class="file-name" id="file-name-1">No file chosen</div>
+                </div>
+                <div class="upload-area" id="upload-area-2">
+                    <div class="upload-icon">&#128196;</div>
+                    <p>Upload Document 2</p>
+                    <input type="file" id="file-upload-2" hidden>
+                    <div class="file-name" id="file-name-2">No file chosen</div>
+                </div>
+            </div>
+            <button class="detect-button">Detect Plagiarism</button>
+            <div class="result-area">
+                <h2 class="result-title">Plagiarism Detection Results</h2>
+                <div class="similarity-score">78% Similar</div>
+                <h3>Highlighted Similarities:</h3>
+                <div class="highlight-area">
+                    <p>The following text appears to be similar in both documents:</p>
+                    <p><span class="highlight">"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."</span></p>
+                    <p><span class="highlight">"Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
