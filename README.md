@@ -59,3 +59,13 @@ A Final Year Project by **Apil Thapa** (London Met ID: 22067753)
 ![LangChain](https://img.shields.io/badge/LangChain-00A67E?logo=langchain&logoColor=white)
 
 ---
+## 🛠️ System Architecture  
+```mermaid  
+graph TD  
+    A[Frontend] -->|Jinja Templates| B(FastAPI Server)  
+    B --> C[MySQL Database]  
+    B --> D[AI Microservices]  
+    D --> E[Document Processor]  
+    D --> F[Face Recognition]  
+    D --> G[Sentiment Analyzer]  
+    B --> H[WebSocket Server]  
