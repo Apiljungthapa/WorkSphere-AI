@@ -1,4 +1,4 @@
-# WORkSphere AI - AI-Powered Employee Management System
+# WorkSphere AI - AI-Powered Employee Management System
 
 ![Project Banner](https://images.g2crowd.com/uploads/product/image/social_landscape/social_landscape_6ae243d4fb68aa4da733de8ffd10d46c/worksphere.png)
 
