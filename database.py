@@ -1,9 +1,8 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, Date, DateTime, ForeignKey, func, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Text, Date, DateTime, ForeignKey, func, Boolean, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship, mapped_column, Mapped
+from sqlalchemy.orm import sessionmaker, relationship, Mapped
 from typing import Optional
-from datetime import datetime
-
+from datetime import datetime, timezone
 
 # Database Configuration
 DATABASE_URL = "mysql+pymysql://root:@localhost/EMS2"
@@ -23,12 +22,16 @@ class User(Base):
     department_name = Column(String(100), nullable=True)
     position = Column(String(100), nullable=True)
     otp_code = Column(String(10), nullable=True)
-
     is_deleted = Column(Boolean, default=False, nullable=False)
 
 
     # One-to-many relationship with Post (a user can have many posts)
     posts = relationship("Post", back_populates="author")  
+    likes = relationship("Like", back_populates="user")
+    comments = relationship("Comment", back_populates="user")
+    support_feedbacks = relationship("SupportFeedback", back_populates="user")
+    chatrooms_as_emp1 = relationship("Chatroom", foreign_keys="[Chatroom.emp1_id]")
+    chatrooms_as_emp2 = relationship("Chatroom", foreign_keys="[Chatroom.emp2_id]")
 
     # One-to-many relationship with Task (assigned to a user and assigned by a user)
     tasks_assigned_to = relationship("Task", foreign_keys="Task.assigned_to_id", back_populates="assigned_to")
@@ -40,66 +43,132 @@ class User(Base):
 class Task(Base):
     __tablename__ = "task"
     
-    task_id: Mapped[str] = Column(String, primary_key=True,  nullable=False)
-    title: Mapped[str] = Column(String(255), nullable=False)
-    description: Mapped[Optional[str]] = Column(Text, nullable=True)
-    due_date: Mapped[Optional[datetime]] = Column(Date, nullable=True)
-    docs_path: Mapped[Optional[str]] = Column(String(255), nullable=True)
-    status: Mapped[str] = Column(String(50), default="Pending", nullable=False)
-    deleted_at: Mapped[Optional[datetime]] = Column(Date, nullable=True)  # Properly mapped
+    task_id = Column(String, primary_key=True, nullable=False)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    due_date = Column(Date, nullable=True)
+    docs_path = Column(String(255), nullable=True)
+    status = Column(String(50), default="Pending", nullable=False)
+    deleted_at = Column(Date, nullable=True)
 
     # Foreign keys
-    assigned_to_id: Mapped[Optional[str]] = Column(String(10), ForeignKey("user.user_id"), nullable=True)
-    assigned_by_id: Mapped[Optional[str]] = Column(String(10), ForeignKey("user.user_id"), nullable=True)
+    assigned_to_id = Column(String(10), ForeignKey("user.user_id"), nullable=True)
+    assigned_by_id = Column(String(10), ForeignKey("user.user_id"), nullable=True)
 
     # Relationships with User
     assigned_to = relationship("User", foreign_keys=[assigned_to_id], back_populates="tasks_assigned_to")
     assigned_by = relationship("User", foreign_keys=[assigned_by_id], back_populates="tasks_assigned_by")
 
     def __repr__(self) -> str:
-        return (f"<Task(task_id={self.task_id}, title='{self.title}', "
-                f"status='{self.status}', docs_path='{self.docs_path}')>")
-    
-# class Task(Base):
-#     __tablename__ = "task"
-    
-#     task_id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-#     title = Column(String(255), nullable=False)
-#     description = Column(Text, nullable=True)
-#     due_date = Column(Date, nullable=True)
-#     docs_path = Column(String(255), nullable=True)
-#     status = Column(String(50), default="Pending", nullable=False)
-#     deleted_at: Optional[datetime] = None 
-
-#     # Foreign keys
-#     assigned_to_id = Column(String(10), ForeignKey("user.user_id"), nullable=True)
-#     assigned_by_id = Column(String(10), ForeignKey("user.user_id"), nullable=True)
-
-#     # Relationships with User
-#     assigned_to = relationship("User", foreign_keys=[assigned_to_id], back_populates="tasks_assigned_to")
-#     assigned_by = relationship("User", foreign_keys=[assigned_by_id], back_populates="tasks_assigned_by")
-
-#     def __repr__(self):
-#         return (f"<Task(task_id={self.task_id}, title='{self.title}', "
-#                 f"status='{self.status}', docs_path='{self.docs_path}')>")
-
+        return f"<Task(task_id={self.task_id}, title='{self.title}', status='{self.status}')>"
 
 class Post(Base):
     __tablename__ = "post"
     
-    post_id = Column(String(20), primary_key=True, index=True)
-    user_id = Column(String(10), ForeignKey("user.user_id"), nullable=False)
-    department_name = Column(String(50), nullable=False)
+    post_id = Column(String(50), primary_key=True, index=True)
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=False)
     likes = Column(Integer, default=0)
-    created_date = Column(DateTime, default=func.now())
+    created_date = Column(DateTime, nullable=False)
+    user_id = Column(String(50), ForeignKey("user.user_id"), nullable=True)
+    deleted_at = Column(Integer, default=0)
 
     # Relationship with User
     author = relationship("User", back_populates="posts")
+    likes_relation = relationship("Like", back_populates="post")
+    comments = relationship("Comment", back_populates="post")
 
     def __repr__(self):
         return f"<Post(post_id={self.post_id}, title='{self.title}', created_date='{self.created_date}')>"
+
+class Like(Base):
+    __tablename__ = "likes"
+
+    like_id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("post.post_id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(String(10), ForeignKey("user.user_id", ondelete="CASCADE"), nullable=False)
+
+    # Ensure a user can like a post only once
+    __table_args__ = (UniqueConstraint('post_id', 'user_id', name='unique_post_user_like'),)
+
+    # Relationships
+    post = relationship("Post", back_populates="likes_relation")
+    user = relationship("User", back_populates="likes")
+
+
+
+class Comment(Base):
+    __tablename__ = 'comment'  # Name of the table in the database
+
+    comment_id = Column(Integer, primary_key=True, autoincrement=True)
+    content = Column(String, nullable=False)  # Content of the comment
+    comment_date = Column(DateTime, nullable=False)  # Date and time of the comment
+    post_id = Column(Integer, ForeignKey('post.post_id'), nullable=False)  # Foreign key to the Post table
+    user_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)  # Foreign key to the User table
+
+    # Relationships
+    post = relationship('Post', back_populates='comments') 
+    user = relationship('User', back_populates='comments')
+
+
+class SupportFeedback(Base):
+    __tablename__ = "support_feedback"
+
+    feedback_id = Column(String(50), primary_key=True, nullable=False)  
+    feedback_type = Column(String(50), nullable=False)  
+    message = Column(Text, nullable=False)  
+    user_id = Column(String(10), ForeignKey("user.user_id", ondelete="CASCADE"), nullable=False)  
+    created_at = Column(DateTime, default=func.now(), nullable=False) 
+
+    # Relationships
+    user = relationship("User", back_populates="support_feedbacks")
+
+
+
+class Chatroom(Base):
+    __tablename__ = 'chatroom'
+
+    chat_id = Column(String(10), primary_key=True)  # Unique chatroom ID
+    created_date = Column(DateTime, default=datetime.utcnow)
+    emp1_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)  # Employee 1 ID
+    emp2_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)  # Employee 2 ID
+
+    # Relationships
+    # messages = relationship("ChatMessage", back_populates="chatroom")
+    emp1 = relationship("User", foreign_keys=[emp1_id])  # Employee 1 user relationship
+    emp2 = relationship("User", foreign_keys=[emp2_id])
+    messages = relationship("ChatMessage", back_populates="chatroom")
+
+
+class ChatMessage(Base):
+    __tablename__ = 'chatmessage'
+
+    msg_id = Column(Integer, ForeignKey('message.msg_id'), primary_key=True)  # Foreign key to Message table
+    chat_id = Column(String(10), ForeignKey('chatroom.chat_id'), nullable=False)
+
+    # Relationships
+    chatroom = relationship("Chatroom", back_populates="messages")
+    message = relationship("Message", back_populates="chat_message")
+
+
+class Message(Base):
+    __tablename__ = 'message'
+
+    msg_id = Column(Integer, primary_key=True)
+    content = Column(String, nullable=False)
+    status = Column(String, default='sent')  # e.g., 'sent', 'delivered', 'read'
+    timestamp = Column(DateTime, default=datetime.now(timezone.utc))
+    chat_id = Column(String(10), ForeignKey('chatroom.chat_id'), nullable=False)
+    sender_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)
+    receiver_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)
+
+    # Relationships
+    chat_message = relationship("ChatMessage", back_populates="message")
+    sender = relationship("User", foreign_keys=[sender_id])
+    receiver = relationship("User", foreign_keys=[receiver_id])
+
+
+
 
 # Create tables in the database
 Base.metadata.create_all(bind=engine)

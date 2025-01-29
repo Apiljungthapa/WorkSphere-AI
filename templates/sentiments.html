@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Feedback Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #818cf8;
+            --background-color: #e0e7ff;
+            --card-background: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #d1d5db;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #e0e7ff 0%, #e0e7ff 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: transparent;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .feedback-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feedback-card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feedback-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .feedback-type {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .feedback-type i {
+            margin-right: 8px;
+        }
+
+        .feedback-date {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .feedback-content {
+            margin-bottom: 15px;
+            color: #4b5563;
+        }
+
+        .sentiment-button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .sentiment-button:hover {
+            background-color: #6366f1;
+        }
+
+        .sentiment-results {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .sentiment-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .emotion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .emotion-item {
+            text-align: center;
+            padding: 20px;
+            background-color: #f3f4f6;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .emotion-item:hover {
+            transform: scale(1.05);
+        }
+
+        .emotion-score {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        .emotion-label {
+            font-size: 1.1rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .feedback-list {
+                grid-template-columns: 1fr;
+            }
+
+            .back-button {
+                top: 15px;
+                left: 15px;
+                transform: none;
+            }
+
+            .sentiment-results {
+                padding: 20px;
+            }
+
+            .emotion-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="{{ url_for('fetch_details_employees') }}" class="back-button"><i class="fas fa-arrow-left"></i></a>
+        <h1>Employee Feedback Dashboard</h1>
+    </header>
+    <div class="container">
+        <div class="feedback-list">
+           
+
+            <div class="feedback-list">
+                {% for feedback in feedback_data %}
+                <div class="feedback-card">
+                    <div class="feedback-type">
+                        <i class="fas fa-box"></i> {{ feedback.feedback_type }}
+                    </div>
+                    <div class="feedback-date">{{ feedback.created_at.strftime('%Y-%m-%d') }}</div>
+                    <div class="feedback-content">
+                        {{ feedback.message }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+          
+        </div>
+        <button class="sentiment-button" id="calculate-sentiment">
+            <i class="fas fa-chart-bar"></i> Calculate Overall Sentiment
+        </button>
+        <div class="sentiment-results">
+            <h2 class="sentiment-title">Sentiment Analysis Results</h2>
+            <div class="emotion-grid">
+                <div class="emotion-item">
+                    <div class="emotion-score">45%</div>
+                    <div class="emotion-label"><i class="far fa-smile"></i> Happy</div>
+                </div>
+                <div class="emotion-item">
+                    <div class="emotion-score">15%</div>
+                    <div class="emotion-label"><i class="far fa-frown"></i> Sad</div>
+                </div>
+                <div class="emotion-item">
+                    <div class="emotion-score">30%</div>
+                    <div class="emotion-label"><i class="far fa-meh"></i> Neutral</div>
+                </div>
+                <div class="emotion-item">
+                    <div class="emotion-score">10%</div>
+                    <div class="emotion-label"><i class="far fa-angry"></i> Negative</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

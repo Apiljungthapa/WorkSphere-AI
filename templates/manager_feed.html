@@ -123,16 +123,15 @@
       }
       .contact-list {
         padding: 16px;
-      
       }
       .unread-badge {
-      background-color: #ff4d4d;
-      color: white;
-      border-radius: 50%;
-      padding: 2px 8px;
-      font-size: 0.8em;
-      margin-left: auto;
-  }
+        background-color: #ff4d4d;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 8px;
+        font-size: 0.8em;
+        margin-left: auto;
+      }
       .contact {
         background: white;
         border-radius: 8px;
@@ -211,47 +210,52 @@
 
       <div class="contact-list" id="contactList">
         {% for user in users %}
-            <a href="/chatting?emp2_id={{ user.user_id }}" class="contact" data-user-id="{{ user.user_id }}">
-                <div class="avatar">{{ user.initials }}</div>
-                <div class="contact-info">
-                    <div class="contact-name">{{ user.full_name }}</div>
-                    <div class="contact-id">User id: {{ user.user_id }}</div>
-                </div>
-                {% if user.unread_count > 0 %}
-                    <div class="unread-badge">{{ user.unread_count }}</div>
-                {% endif %}
-            </a>
+        <a
+          href="/chatting?emp2_id={{ user.user_id }}"
+          class="contact"
+          data-user-id="{{ user.user_id }}"
+        >
+          <div class="avatar">{{ user.initials }}</div>
+          <div class="contact-info">
+            <div class="contact-name">{{ user.full_name }}</div>
+            <div class="contact-id">User id: {{ user.user_id }}</div>
+          </div>
+          {% if user.unread_count > 0 %}
+          <div class="unread-badge">{{ user.unread_count }}</div>
+          {% endif %}
+        </a>
         {% endfor %}
-    </div>
+      </div>
     </div>
   </body>
   <script>
-
-const userId = "{{ logged_in_user_id }}";
+    const userId = "{{ logged_in_user_id }}";
     const ws = new WebSocket(`ws://${window.location.host}/ws/${userId}`);
 
-    ws.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        if (data.type === 'new_message') {
-            const senderId = data.sender_id;
-            const unreadCount = data.unread_count;
-            const contactElement = document.querySelector(`[data-user-id="${senderId}"]`);
-            if (contactElement) {
-                const badge = contactElement.querySelector('.unread-badge');
-                if (unreadCount > 0) {
-                    if (!badge) {
-                        const newBadge = document.createElement('div');
-                        newBadge.className = 'unread-badge';
-                        newBadge.textContent = unreadCount;
-                        contactElement.appendChild(newBadge);
-                    } else {
-                        badge.textContent = unreadCount;
-                    }
-                } else if (badge) {
-                    badge.remove();
-                }
+    ws.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      if (data.type === "new_message") {
+        const senderId = data.sender_id;
+        const unreadCount = data.unread_count;
+        const contactElement = document.querySelector(
+          `[data-user-id="${senderId}"]`
+        );
+        if (contactElement) {
+          const badge = contactElement.querySelector(".unread-badge");
+          if (unreadCount > 0) {
+            if (!badge) {
+              const newBadge = document.createElement("div");
+              newBadge.className = "unread-badge";
+              newBadge.textContent = unreadCount;
+              contactElement.appendChild(newBadge);
+            } else {
+              badge.textContent = unreadCount;
             }
+          } else if (badge) {
+            badge.remove();
+          }
         }
+      }
     };
 
     document.addEventListener("DOMContentLoaded", function () {

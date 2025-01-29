@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Feedback Form</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #5660d2, #307373);
@@ -84,6 +86,21 @@
         .back-button i {
             margin-right: 8px; /* Space between icon and text */
         }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
 
         .form-title {
             font-size: 24px;
@@ -97,6 +114,73 @@
         .form-group {
             margin-bottom: 20px;
         }
+
+        /* Custom Alert Styles */
+.custom-alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    opacity: 0;
+    animation: fadeInAlert 0.5s forwards; /* Fade-in animation */
+}
+
+/* Different Alert Types */
+.custom-alert.success {
+    background-color: #28a745;
+    color: white;
+}
+
+.custom-alert.error {
+    background-color: #dc3545;
+    color: white;
+}
+
+.custom-alert.warning {
+    background-color: #ffc107;
+    color: black;
+}
+
+.custom-alert.info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+/* Close Button Styles */
+.custom-alert .close {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+
+.custom-alert .close span {
+    font-size: 20px;
+}
+
+/* Fade-in Animation */
+@keyframes fadeInAlert {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Optional: Add smooth transition for hover effect */
+.custom-alert:hover {
+    opacity: 1;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
 
         label {
             display: block;
@@ -175,33 +259,25 @@
         <div class="form-container">
             <div class="form-header">
                 <button class="back-button">
-                    <a href="dashboard.html" aria-label="Go back to dashboard">
+                    <a href="{{ url_for('dashboard') }}" aria-label="Go back to dashboard">
                         <i class="fas fa-arrow-left"></i> Back
                     </a>
                 </button>
                 <h1 class="form-title">Employee Feedback Form</h1>
             </div>
+           
+            {% if message %}
+            <div class="alert custom-alert alert-dismissible fade show {{ message_type }}" role="alert" id="messageAlert">
+                <strong>{{ message }}</strong>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="closeAlert()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endif %}
+        
+
             <div class="form-content">
-                <form id="feedbackForm">
-                    <div class="form-group">
-                        <label for="name">Name:</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="department">Department:</label>
-                        <select id="department" name="department" required>
-                            <option value="">Select Department</option>
-                            <option value="hr">Human Resources</option>
-                            <option value="it">Information Technology</option>
-                            <option value="finance">Finance</option>
-                            <option value="marketing">Marketing</option>
-                            <option value="operations">Operations</option>
-                        </select>
-                    </div>
+                <form action="/submit-feedback" method="post">
                     <div class="form-group">
                         <label for="feedbackType">Feedback Type:</label>
                         <select id="feedbackType" name="feedbackType" required>
@@ -218,41 +294,19 @@
                     </div>
                     <button type="submit" class="submit-btn">Submit Feedback</button>
                 </form>
+                
                 <div id="messageContainer" class="message" style="display: none;"></div>
             </div>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('feedbackForm');
-            const messageContainer = document.getElementById('messageContainer');
-
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Simulating form submission
-                setTimeout(() => {
-                    const success = Math.random() < 0.8; // 80% chance of success
-                    if (success) {
-                        showMessage('Feedback submitted successfully!', 'success');
-                        form.reset();
-                    } else {
-                        showMessage('Error submitting feedback. Please try again.', 'error');
-                    }
-                }, 1000);
-            });
-
-            function showMessage(message, type) {
-                messageContainer.textContent = message;
-                messageContainer.className = `message ${type}`;
-                messageContainer.style.display = 'block';
-
-                setTimeout(() => {
-                    messageContainer.style.display = 'none';
-                }, 5000);
-            }
-        });
-    </script>
+  
 </body>
+<script>
+    function closeAlert() {
+        var alertElement = document.getElementById("messageAlert");
+        alertElement.style.display = 'none';  // Hide the alert
+    }
+</script>
+
 </html>

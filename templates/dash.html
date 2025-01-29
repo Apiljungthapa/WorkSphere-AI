@@ -120,6 +120,7 @@
             font-weight: bold;
             color: #1038a2;
         }
+        
         .employee-table {
             background-color: white;
             border-radius: 12px;
@@ -241,7 +242,7 @@
             <a href="{{ url_for('assign_task') }}"><i class="fas fa-tasks"></i></i><span>Tasks</span></a>
             
 
-                <a href="allfeedback.html">
+                <a href="{{ url_for('render_sentiments_page') }}">
                     <i class="fas fa-comments"></i>
                     <span>Evaluations</span>
                   </a>
@@ -251,6 +252,12 @@
                     <i class="fas fa-bullhorn"></i>
                     <span>Announce</span>
                   </a>
+
+                  <a href="/feed" class="chat-employee">
+                    <i class="fas fa-comments"></i>
+                    <span>Chat with Employees</span>
+                </a>
+                
 
                   <a href="/logout">
                     <i class="fas fa-sign-out-alt"></i>

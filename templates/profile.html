@@ -225,7 +225,7 @@
 </head>
 <body>
     <div class="container">
-        <a href="dashboard.html" class="back-button">
+        <a href="{{ url_for('dashboard') }}" class="back-button">
             <i class="fas fa-arrow-left"></i> Back
         </a>
         
@@ -233,51 +233,29 @@
         <div class="profile-section">
             <img src="https://i.pravatar.cc/300?img=69" alt="Apil Thapa" class="profile-picture" id="profilePicture">
             <div class="profile-info">
-                <div class="employee-name">Apil Thapa</div>
-                <div class="employee-position">Senior AI Engineer</div>
-                <div class="photo-upload">
-                    <label for="photoUpload">Update Photo</label>
-                    <input type="file" id="photoUpload" accept="image/*">
-                </div>
+                <div class="employee-name">{{ name }}</div>
+                <div class="employee-position">{{ position }}</div>
             </div>
         </div>
-        <form>
+
+        <!-- Profile update form -->
+        <form action="/update-profile" method="post">
             <div class="form-group">
                 <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" value="Apil Thapa" required>
+                <input type="text" id="name" name="name" value="{{ name }}" required>
             </div>
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="apil.xetri@example.com" required>
+                <input type="email" id="email" name="email" value="{{ email }}" required>
             </div>
             <div class="form-group">
                 <label for="phone">Phone</label>
-                <input type="tel" id="phone" name="phone" value="+1 (555) 123-4567">
+                <input type="tel" id="phone" name="phone" value="{{ phone }}">
             </div>
-            <div class="form-group">
-                <label for="department">Department</label>
-                <select id="department" name="department">
-                    <option value="">Select Department</option>
-                    <option value="hr">Human Resources</option>
-                    <option value="it" selected>Information Technology</option>
-                    <option value="finance">Finance</option>
-                    <option value="marketing">Marketing</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="position">Position</label>
-                <input type="text" id="position" name="position" value="Senior AI Engineer">
-            </div>
-<<<<<<< HEAD
-            <div class="form-group">
-                <label for="bio">Bio</label>
-                <textarea id="bio" name="bio">Experienced AI engineer with a passion for creating efficient and scalable applications. Specializing in full-stack development with a focus on cloud technologies and agile methodologies.</textarea>
-            </div>
-=======
-           
->>>>>>> 7041603 (new final commit)
+
             <button type="submit" class="submit-button">Update Profile</button>
         </form>
     </div>
 </body>
+
 </html>

@@ -1,15 +1,14 @@
-from fastapi import FastAPI, Form, Depends, Request, HTTPException, Query, UploadFile, File, Response
+from fastapi import FastAPI, Form, Depends, Request, HTTPException, Query, UploadFile, File, Response, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
-from database import get_db, User, Task
+from sqlalchemy.orm import Session,sessionmaker
+from database import get_db, User, Task, Post, Like, Comment, SupportFeedback, Chatroom, ChatMessage, Message
 from fastapi.security import OAuth2PasswordBearer
 import random
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import random
 import string
-from typing import List
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
 import uuid
@@ -17,6 +16,11 @@ from tasks import send_email_task
 from pathlib import Path
 import os
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.exc import SQLAlchemyError
+from fastapi.websockets import WebSocket
+from typing import Dict, List
+from utils import generate_initials, convert_utc_to_nepal_local
+import pytz # type: ignore
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -178,18 +182,7 @@ def decode_access_token(token: str):
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-# @app.get("/dash", response_class=HTMLResponse)
-# async def dash(request: Request):
 
-#     token = request.cookies.get("access_token")
-#     if not token:
-#         raise HTTPException(status_code=401, detail="Not authenticated")
-    
-#     token_data = decode_access_token(token.replace("Bearer ", ""))
-#     user_id = token_data.get("user_id")
-#     role = token_data.get("role")
-
-#     return templates.TemplateResponse("dash.html", {"request": request, "user_id": user_id, "role": role})
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request, db: Session = Depends(get_db)):
@@ -208,6 +201,9 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     user_id = token_data.get("user_id")
     role = token_data.get("role")
     department_name = token_data.get("department_name")
+
+    user = db.query(User).filter(User.user_id == user_id).first()
+    user_full_name = user.full_name if user else "Unknown User"
 
     department_head = db.query(User).filter(
         User.department_name == department_name,
@@ -230,6 +226,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         {
             "request": request,
             "user_id": user_id,
+            "user_full_name": user_full_name,
             "role": role,
             "department_name": department_name,
             "department_head": department_head_name,
@@ -504,10 +501,6 @@ async def create_task(
         return RedirectResponse(url="/assignment", status_code=303)
     else:
         raise HTTPException(status_code=404, detail="Task not found")
-    
-
-
-
 
 # ----------------------------------------------------------------
 
@@ -548,6 +541,7 @@ async def assignment(request: Request, db: Session = Depends(get_db)):
         "assignment.html", 
         {"request": request, "tasks": tasks_with_manager}
     )
+
 
 # submission udate grne code
 
@@ -621,14 +615,14 @@ async def submit_update(
         with file_path.open("wb") as buffer:
             buffer.write(await file.read())
         
-        # Update the file path in the database
+
         task.docs_path = str(file_path)
     
-    # Save updates in the database
+
     db.commit()
-    db.refresh(task)  # Refresh to reflect the latest changes
+    db.refresh(task)  
     
-    # Redirect to the assignment page
+
     return RedirectResponse(url="/assignment", status_code=303)
 
 
@@ -636,10 +630,61 @@ async def submit_update(
 
 
 # -----------------------------------------------------------------------
-
+# post fetch garera dekhaune
 @app.get("/emp_details", response_class=HTMLResponse)
-async def employee_details_page(request: Request):
-    return templates.TemplateResponse("emp_details.html", {"request": request})
+async def employee_details_page(request: Request, db: Session = Depends(get_db)):
+
+    # Check for authentication token
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    # Decode token to get user details
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+
+    user_id = token_data.get("user_id")
+
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    department_name = user.department_name
+
+    total_employees = db.query(User).filter(
+        User.department_name == department_name, 
+        User.role == "employee"
+    ).count()
+
+    # Fetch posts for the authenticated user
+    posts = fetch_posts_for_user(user_id, db)
+
+    comments = fetch_comments_for_posts(posts, db)
+
+    # Retrieve messages from cookies
+    message = request.cookies.get("message")
+    message_type = request.cookies.get("message_type")
+
+    # Prepare the template response
+    response = templates.TemplateResponse(
+        "emp_details.html",
+        {
+            "request": request,
+            "posts": posts,
+            "message": message,
+            "department_name": department_name,
+            "total_employees": total_employees,
+            "comments_by_post": comments,
+            "message_type": message_type,
+        },
+    )
+
+    # Clear the message cookies after rendering
+    response.delete_cookie("message")
+    response.delete_cookie("message_type")
+
+    return response
+
+
 
 
 
@@ -650,9 +695,18 @@ async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
+@app.get("/register", response_class=HTMLResponse)
+async def register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+@app.get("/editpost", response_class=HTMLResponse)
+async def post_edit_page(request: Request):
+    return templates.TemplateResponse("post_edit.html", {"request": request})
+
+
+
 @app.get("/employee-details", response_class=HTMLResponse)
 async def employee_details(request: Request, db: Session = Depends(get_db)):
-
     token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -668,23 +722,330 @@ async def employee_details(request: Request, db: Session = Depends(get_db)):
     if not department_name:
         raise HTTPException(status_code=404, detail="Department not assigned")
     
+    # Fetch department heads and add initials
     department_heads = db.query(User).filter(
         User.department_name == department_name,
         User.position.ilike('%head%')  
     ).all()
-    
-    department_members = db.query(User).filter(
-        User.department_name == department_name,
-        ~User.position.ilike('%head%') 
-    ).all()
+
+    department_heads_list = [
+        {
+            "full_name": head.full_name,
+            "initials": generate_initials(head.full_name),  # Using function
+            "position": head.position
+        }
+        for head in department_heads
+    ]
 
     
+
+    # Fetch department members and add initials
+    department_members = db.query(User).filter(
+        User.department_name == department_name,
+        ~User.position.ilike('%head%')  
+    ).all()
+
+    department_members_list = [
+        {
+            "full_name": member.full_name,
+            "initials": generate_initials(member.full_name),  # Using function
+            "position": member.position
+        }
+        for member in department_members
+    ]
+
     return templates.TemplateResponse("emp_page.html", {
         "request": request,
         "department_name": department_name,
-        "department_heads": department_heads,
-        "department_members": department_members
+        "department_heads": department_heads_list,
+        "department_members": department_members_list
     })
+
+# post banaune ayo
+
+@app.post("/posts/")
+async def create_post(request: Request, title: str = Form(...), content: str = Form(...), db: Session = Depends(get_db)):
+
+    try:
+
+        token = request.cookies.get("access_token")
+        if not token:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        token_data = decode_access_token(token.replace("Bearer ", ""))
+
+        user_id = token_data.get("user_id")
+
+        post_id = f"PST{str(uuid.uuid4().int)[:5]}"
+
+        utc_time = datetime.now(pytz.utc)
+        nepal_time = convert_utc_to_nepal_local(utc_time)
+
+
+        db_post = Post(
+            post_id=post_id,
+            title=title,
+            content=content,
+            created_date=nepal_time,
+            user_id=user_id  
+        )
+        db.add(db_post)
+        db.commit()
+        db.refresh(db_post)
+
+        posts = fetch_posts_for_user(user_id, db) # call gareko func lai
+
+        response = RedirectResponse(url="/emp_details", status_code=303)
+        response.set_cookie("message", "Post created successfully!")
+        response.set_cookie("message_type", "success")
+        return response
+    
+    except SQLAlchemyError as e:
+        response = RedirectResponse(url="/emp_details", status_code=303)
+        response.set_cookie("message", "Failed to create the post!")
+        response.set_cookie("message_type", "error")
+        return response
+    
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+
+
+
+
+
+def fetch_posts_for_user(user_id: str, db: Session) -> list:
+    """
+    Fetch posts for a user based on their department, excluding soft deleted posts, and including like status.
+    Also fetches the created_date formatted to "YYYY-MM-DD HH:MM:SS".
+    """
+    # Fetch the user from the database
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Get the user's department
+    current_user_department = user.department_name
+
+    posts = db.query(Post).join(User).filter(
+        User.department_name == current_user_department,
+        Post.deleted_at == 0  
+    ).all()
+
+
+    for post in posts:
+
+        is_liked = db.query(Like).filter(Like.user_id == user_id, Like.post_id == post.post_id).first() is not None
+        post.is_liked = is_liked
+        author = db.query(User).filter(User.user_id == post.user_id).first()
+        full_name = author.full_name if author else "Unknown"
+        initials = generate_initials(full_name)
+
+        if post.created_date:
+            post.created_date = post.created_date.strftime("%B %d, %Y %I:%M %p")
+
+        post.full_name = full_name
+        post.initials = initials
+
+    return posts
+
+
+
+
+
+# post edit garda id pathaune  
+
+@app.get("/post/edit/{post_id}", response_class=HTMLResponse)
+async def post_edit_page(post_id: str, request: Request, db: Session = Depends(get_db)):
+
+    post = db.query(Post).filter(Post.post_id == post_id).first()
+    
+
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    return templates.TemplateResponse(
+        "post_edit.html",
+        {
+            "request": request,
+            "post": post,  
+        },
+    )
+
+
+# post update garne code
+
+@app.post("/edit_post/{post_id}", response_class=HTMLResponse)
+async def edit_post(
+    request: Request,
+    post_id: str,
+    content: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    try:
+        # Fetch the post by post_id
+        post = db.query(Post).filter(Post.post_id == post_id).first()
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+
+
+        post.content = content.strip()  # Trim whitespace to avoid unintended issues
+        db.commit()  # Save changes to the database
+        db.refresh(post)  # Refresh the session to reflect updated changes
+        print("Update successful")
+
+        # Redirect with success message
+        response = RedirectResponse(url="/emp_details", status_code=303)
+        response.set_cookie("message", "Post updated successfully!")
+        response.set_cookie("message_type", "success")
+        return response
+
+    except Exception as e:
+        print(f"Error during update: {e}")  # Log the exception
+        response = RedirectResponse(url="/emp_details", status_code=303)
+        response.set_cookie("message", "Failed to update the post!")
+        response.set_cookie("message_type", "error")
+        return response
+
+
+
+@app.get("/post/delete/{post_id}", response_class=RedirectResponse)
+async def soft_delete_post(post_id: str, request: Request, db: Session = Depends(get_db)):
+
+    try:
+        post = db.query(Post).filter(Post.post_id == post_id).first()
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+        
+        post.deleted_at = 1  
+        db.commit()
+
+        # Set success message in cookies
+        response = RedirectResponse(url="/emp_details", status_code=303)
+        response.set_cookie("message", "Post deleted successfully!")
+        response.set_cookie("message_type", "success")
+        return response
+    except Exception as e:
+        print(f"Error during deletion: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete the post")
+    
+
+
+
+
+#Likes ko part ayo aba..
+
+@app.post("/post/{action}/{post_id}")
+def toggle_like(action: str, post_id: str, request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+    user_id = token_data.get("user_id")
+
+    post = db.query(Post).filter(Post.post_id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    existing_like = db.query(Like).filter(Like.user_id == user_id, Like.post_id == post_id).first()
+
+    if action == "like":
+
+        if not existing_like:
+            like_id = f"LKE{random.randint(1000, 9999)}"
+            new_like = Like(like_id=like_id, user_id=user_id, post_id=post_id)
+            db.add(new_like)
+
+            post.likes += 1
+            db.commit()
+
+    elif action == "unlike":
+
+        if existing_like:
+            db.delete(existing_like)
+
+
+            post.likes -= 1
+            db.commit()
+
+    db.refresh(post)
+    return {"likes": post.likes}  
+
+
+# comment
+@app.post("/comments/")
+async def add_comment(
+    request: Request, 
+    post_id: str = Form(...),  
+    content: str = Form(...), 
+    db: Session = Depends(get_db) 
+):
+    try:
+        # Check for token authentication
+        token = request.cookies.get("access_token")
+        if not token:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        token_data = decode_access_token(token.replace("Bearer ", ""))
+        user_id = token_data.get("user_id")
+
+        # Generate unique comment_id (e.g., cmnt0934)
+        comment_id = f"cmnt{str(uuid.uuid4().int)[:5]}"  # Generate random comment_id using UUID
+
+        utc_time = datetime.now(pytz.utc)
+        nepal_time = convert_utc_to_nepal_local(utc_time)
+
+        
+        # Create the Comment instance using SQLAlchemy ORM
+        new_comment = Comment(
+            comment_id=comment_id,
+            content=content,
+            post_id=post_id,  
+            comment_date=nepal_time,
+            user_id=user_id
+        )
+
+        # Add the comment to the session and commit
+        db.add(new_comment)
+        db.commit()
+
+        response = RedirectResponse(url="/emp_details", status_code=303)
+        response.set_cookie("message", "Comment added successfully!")
+        response.set_cookie("message_type", "success")
+        return response
+
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+
+
+
+def fetch_comments_for_posts(posts: list, db: Session) -> dict:
+    
+    post_ids = [post.post_id for post in posts]
+    comments = (
+        db.query(Comment, User.full_name)
+        .join(User, User.user_id == Comment.user_id)
+        .filter(Comment.post_id.in_(post_ids))
+        .all()
+    )
+
+    # Organize comments by post_id
+    comments_by_post = {}
+    for comment, full_name in comments:
+        initials = generate_initials(full_name)
+        if comment.post_id not in comments_by_post:
+            comments_by_post[comment.post_id] = []
+        comments_by_post[comment.post_id].append(
+            {
+                "content": comment.content,
+                "full_name": full_name,
+                "initials": initials,
+                "comment_date": comment.comment_date.strftime("%B %d, %Y %I:%M %p"),
+            }
+        )
+    return comments_by_post
 
 
 
@@ -765,8 +1126,6 @@ async def tracking_page(request: Request, user_id: str = None, db: Session = Dep
 
 
         pending_tasks = query.filter(Task.status == "Pending").all()
-
-
 
         submitted_or_approved_tasks = db.query(Task).filter(
                 Task.assigned_to_id == user_id,
@@ -941,8 +1300,419 @@ async def delete_user(user_id: str, db: Session = Depends(get_db)):
     return RedirectResponse(url="/dash", status_code=303)
 
 
+@app.get("/feedback", response_class=HTMLResponse)
+async def feedback_page(request: Request, db: Session = Depends(get_db)):
+    # Here you can fetch any necessary data, or handle feedback form processing
+
+    # Prepare the template response
+    return templates.TemplateResponse("feedback.html", {"request": request})
 
 
+@app.post("/submit-feedback", response_class=HTMLResponse)
+async def submit_feedback(
+    request: Request,
+    feedbackType: str = Form(...),
+    message: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    
+    # Extract user ID from the token
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+    user_id = token_data.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User ID not found in token")
+
+    # Generate a unique feedback ID
+    feedback_id = f"FDB{random.randint(10000, 99999)}"
+
+
+    print(feedbackType)
+    
+    # Create a new feedback entry
+    new_feedback = SupportFeedback(
+        feedback_id=feedback_id,
+        user_id=user_id,
+        feedback_type=feedbackType,
+        message=message,
+        created_at=datetime.now(timezone.utc),
+    )
+    db.add(new_feedback)
+    db.commit()
+
+    # Prepare a success message
+    message = "Feedback submitted successfully "
+
+    # Render the response template
+    return templates.TemplateResponse(
+        "feedback.html",
+        {
+            "request": request,
+            "message": message,
+            "message_type": "success",
+        },
+    )
+
+
+
+@app.get("/sentiments", response_class=HTMLResponse)
+async def render_sentiments_page(request: Request, db: Session = Depends(get_db)):
+    """
+    Fetch all feedback data from the `support_feedback` table and render the sentiments.html page.
+    """
+    # Query the support_feedback table for feedback_type, message, and created_at
+    feedback_data = db.query(SupportFeedback.feedback_type, SupportFeedback.message, SupportFeedback.created_at).all()
+
+    # Render the template with the feedback data
+    return templates.TemplateResponse(
+        "sentiments.html",
+        {
+            "request": request,
+            "feedback_data": feedback_data,  # Pass the feedback data to the template
+        },
+    )
+
+
+
+
+
+
+
+@app.get("/profile", response_class=HTMLResponse)
+async def user_profile(request: Request, db: Session = Depends(get_db)):
+    # Extract the user ID from the token
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+    user_id = token_data.get("user_id")
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User ID not found in token")
+
+    user = db.query(User).filter(User.user_id == user_id).first()
+    print(user)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return templates.TemplateResponse(
+        "profile.html",
+        {
+            "request": request,
+            "name": user.full_name,
+            "email": user.email,
+            "phone": user.phone,
+            "position": user.position,
+        },
+    )
+
+
+@app.post("/update-profile", response_class=HTMLResponse)
+async def update_profile(
+    request: Request,
+    name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    # Extract user ID from the token
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+    user_id = token_data.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User ID not found in token")
+
+    # Query the user details from the database
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update the user profile
+    user.full_name = name
+    user.email = email
+    user.phone = phone
+
+    db.commit()
+
+    # Redirect back to the profile page with a success message
+    return templates.TemplateResponse(
+        "profile.html",
+        {
+            "request": request,
+            "name": user.full_name,
+            "email": user.email,
+            "phone": user.phone,
+            "position": user.position,
+            "message": "Profile updated successfully",
+            "message_type": "success",
+        },
+    )
+
+
+
+# chatting <<<<<---------------------------------------------->>>>>>>>>>>>>>
+
+
+@app.get("/feed", response_class=HTMLResponse)
+async def get_feed(request: Request, db: Session = Depends(get_db)):
+    
+    # Get the access token from the request cookies
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        # Decode the JWT token to get the logged-in user's ID
+        token_data = decode_access_token(token.replace("Bearer ", ""))
+        logged_in_user_id = token_data.get("user_id")
+
+    except HTTPException:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    # Query the database for all users except the logged-in user
+    users = db.query(User.user_id, User.full_name).filter(User.user_id != logged_in_user_id).all()
+
+    users_with_initials = []
+    for user in users:
+        unread_count = db.query(Message).filter(
+            Message.sender_id == user.user_id,
+            Message.receiver_id == logged_in_user_id,
+            Message.status == 'unread'
+        ).count()
+        users_with_initials.append({
+            "user_id": user.user_id,
+            "full_name": user.full_name,
+            "initials": generate_initials(user.full_name),
+            "unread_count": unread_count
+        })
+
+    return templates.TemplateResponse(
+        "feed.html",
+        {
+            "request": request,
+            "users": users_with_initials,
+            "logged_in_user_id": logged_in_user_id  # Pass user ID to template
+        }
+    )
+
+
+@app.get("/chatting")
+async def chatting(emp2_id: str, request: Request, db: Session = Depends(get_db)):
+    # Get emp1_id from the token
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        # Decode the JWT token to get emp1_id
+        token_data = decode_access_token(token.replace("Bearer ", ""))
+        emp1_id = token_data.get("user_id")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    print(emp2_id)
+
+  
+
+    # Check if a chatroom exists between emp1 and emp2
+    chatroom = (
+        db.query(Chatroom)
+        .filter(
+            ((Chatroom.emp1_id == emp1_id) & (Chatroom.emp2_id == emp2_id)) |
+            ((Chatroom.emp1_id == emp2_id) & (Chatroom.emp2_id == emp1_id))
+        )
+        .first()
+    )
+      # Mark messages from emp2 to emp1 as read
+    db.query(Message).filter(
+        Message.chat_id == chatroom.chat_id,
+        Message.sender_id == emp2_id,
+        Message.receiver_id == emp1_id,
+        Message.status == 'unread'
+    ).update({"status": "read"})
+    db.commit()
+
+    if not chatroom:
+        # Generate a random unique chat ID
+        chat_id = "CHT" + "".join(random.choices(string.digits, k=8))
+        
+        # Create a new chatroom
+        chatroom = Chatroom(
+            chat_id=chat_id,
+            emp1_id=emp1_id,
+            emp2_id=emp2_id,
+            created_date=datetime.now(timezone.utc)
+        )
+        print(chatroom)
+        db.add(chatroom)
+        db.commit()
+        db.refresh(chatroom)
+
+    # Fetch emp1 and emp2 names
+    emp1_name = db.query(User).filter(User.user_id == emp1_id).first().full_name
+    emp2_name = db.query(User).filter(User.user_id == emp2_id).first().full_name
+    emp2_initials = generate_initials(emp2_name)  
+
+    # Render the chatroom details in the template
+    return templates.TemplateResponse(
+        "chatting.html",
+        {
+            "request": request,
+            "chatroom_id": chatroom.chat_id,
+            "emp2_name": emp2_name,
+            "emp2_initials": emp2_initials,  
+            "emp1_id": emp1_id,
+            "emp2_id": emp2_id
+        }
+    )
+
+
+# WebSocket Connection Manager
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, WebSocket] = {}
+
+    async def connect(self, user_id: str, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections[user_id] = websocket
+
+    def disconnect(self, user_id: str):
+        self.active_connections.pop(user_id, None)
+
+    async def send_personal_message(self, message: dict, user_id: str):
+        if user_id in self.active_connections:
+            websocket = self.active_connections[user_id]
+            await websocket.send_json(message)
+
+    async def broadcast(self, message: dict):
+        for websocket in self.active_connections.values():
+            await websocket.send_json(message)
+    
+
+manager = ConnectionManager()
+
+
+# WebSocket Endpoint
+
+
+
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str, db: Session = Depends(get_db)):
+    await manager.connect(user_id, websocket)
+    try:
+        while True:
+            data = await websocket.receive_json()
+
+            chat_id = data["chat_id"]
+            sender_id = data["sender_id"]
+            receiver_id = data["receiver_id"]
+            content = data["content"]
+            
+            # Get the current UTC time and convert to Nepal time
+            utc_time = datetime.now(pytz.utc)
+            nepal_time = convert_utc_to_nepal_local(utc_time)
+
+            msg_id = "MSG" + "".join(random.choices(string.digits, k=4))
+
+            # Save message to database with Nepal time
+            message = Message(
+                msg_id=msg_id,
+                chat_id=chat_id,
+                status='unread',
+                sender_id=sender_id,
+                receiver_id=receiver_id,
+                content=content,
+                timestamp=nepal_time  # Save Nepal local time
+            )
+            db.add(message)
+            db.commit()
+            db.refresh(message)
+
+            # Send message to receiver (send Nepal time in response)
+            response = {
+                "type": "chat_message",
+                "chat_id": chat_id,
+                "sender_id": sender_id,
+                "receiver_id": receiver_id,
+                "content": content,
+                "timestamp": nepal_time.isoformat()  # Send the Nepal time in ISO format
+            }
+
+            await manager.send_personal_message(response, receiver_id)
+
+            unread_count = db.query(Message).filter(
+                Message.sender_id == sender_id,
+                Message.receiver_id == receiver_id,
+                Message.status == 'unread'
+            ).count()
+
+            # Send notification to receiver's feed
+            notification = {
+                "type": "new_message",
+                "sender_id": sender_id,
+                "unread_count": unread_count
+            }
+            await manager.send_personal_message(notification, receiver_id)
+
+    except WebSocketDisconnect:
+        manager.disconnect(user_id)
+
+
+
+# Fetch Chat History API
+@app.get("/chats/{chat_id}")
+def get_chat_history(chat_id: str, db: Session = Depends(get_db)):
+    messages = db.query(Message).filter(Message.chat_id == chat_id).order_by(Message.timestamp.asc()).all()
+    return [
+        {
+            "msg_id": message.msg_id,
+            "content": message.content,
+            "status": message.status,
+            "timestamp": message.timestamp.isoformat(),
+            "sender_id": message.sender_id,
+            "receiver_id": message.receiver_id
+        }
+        for message in messages
+    ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# <<<<<<<<<<<<<--------------------------------------------------------------->>>>>>>>>>>>>.
 
 
 
