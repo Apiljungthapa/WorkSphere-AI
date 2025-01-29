@@ -1,6 +1,6 @@
 # WORkSphere AI - AI-Powered Employee Management System
 
-![Project Banner](https://via.placeholder.com/1200x400.png?text=WORkSphere+AI+Banner)
+![Project Banner](https://images.g2crowd.com/uploads/product/image/social_landscape/social_landscape_6ae243d4fb68aa4da733de8ffd10d46c/worksphere.png)
 
 A Final Year Project by **Apil Thapa** (London Met ID: 22067753)  
 *Under the guidance of Mr. Alish Kc and Mr. Samrat Thapa*
