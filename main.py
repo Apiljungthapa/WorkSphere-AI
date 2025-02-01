@@ -2,7 +2,7 @@ from fastapi import FastAPI, Form, Depends, Request, HTTPException, Query, Uploa
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session,sessionmaker
-from database import get_db, User, Task, Post, Like, Comment, SupportFeedback, Chatroom, ChatMessage, Message
+from database import get_db, User, Task, Post, Like, Comment, SupportFeedback, Chatroom, Message, Announcement, Notification
 from fastapi.security import OAuth2PasswordBearer
 import random
 from sendgrid import SendGridAPIClient
@@ -20,7 +20,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from fastapi.websockets import WebSocket
 from typing import Dict, List
 from utils import generate_initials, convert_utc_to_nepal_local
-import pytz # type: ignore
+import pytz 
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -214,11 +214,18 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
 
     department_head_name = department_head.full_name if department_head else "N/A"
 
+    user = db.query(User).filter(User.user_id == user_id).first()
+    
+    # Show red dot if any notification is unread
+    show_red_dot = user.istask_read == "false" or user.isnotificationread == "false"
+
+
 
     # Count members in the same department
     department_members_count = (
         db.query(User).filter(User.department_name == department_name).count()
     )
+    print(show_red_dot)
 
     # Render the dashboard template with the required data
     return templates.TemplateResponse(
@@ -231,6 +238,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             "department_name": department_name,
             "department_head": department_head_name,
             "department_members_count": department_members_count,
+            "show_red_dot": show_red_dot
         },
     )
 
@@ -413,6 +421,32 @@ def assign_task(
     )
 
     db.add(task)
+
+    user = db.query(User).filter(User.user_id == assigned_to_id).first()
+    if user:
+        user.istask_read = "false"  # Store as string, not Boolean
+        db.add(user)
+        db.commit()
+
+
+    utc_time = datetime.now(pytz.utc)
+
+    nepal_time = convert_utc_to_nepal_local(utc_time)
+
+    notification_id=f"NTF{random.randint(1000, 9999)}",
+
+
+
+    notification = Notification(
+        notification_id=notification_id,
+        user_id=assigned_to_id, 
+        date=nepal_time,
+        task_id=task_id,
+        content=f"New task assigned: {title}, Check it out!",
+        
+    )
+    db.add(notification)
+
     db.commit()
 
     return RedirectResponse(url="/dash", status_code=303)
@@ -668,6 +702,7 @@ async def employee_details_page(request: Request, db: Session = Depends(get_db))
     response = templates.TemplateResponse(
         "emp_details.html",
         {
+            "user_id":user_id,
             "request": request,
             "posts": posts,
             "message": message,
@@ -1099,6 +1134,7 @@ async def fetch_details_employees(request: Request, db: Session = Depends(get_db
     return templates.TemplateResponse(
         "dash.html", 
         {
+            "user_id": user_id,
             "request": request,
             "employees": employee_data,
             **department_stats,
@@ -1127,6 +1163,9 @@ async def tracking_page(request: Request, user_id: str = None, db: Session = Dep
 
         pending_tasks = query.filter(Task.status == "Pending").all()
 
+        # Fetch all posts created by the user
+        user_posts = db.query(Post).filter(Post.user_id == user_id).all()
+
         submitted_or_approved_tasks = db.query(Task).filter(
                 Task.assigned_to_id == user_id,
                 Task.deleted_at == None,  # Exclude soft-deleted tasks
@@ -1140,8 +1179,9 @@ async def tracking_page(request: Request, user_id: str = None, db: Session = Dep
             {
                 "request": request,
                 "employee": employee,
-                "pending_tasks": pending_tasks,  # Tasks with "Pending" status
-                "submitted_or_approved_tasks": submitted_or_approved_tasks,  # Tasks with "Submitted" or "Approved" status
+                "pending_tasks": pending_tasks,  
+                "submitted_or_approved_tasks": submitted_or_approved_tasks, 
+                "user_posts": user_posts
             }
         )
 
@@ -1330,7 +1370,7 @@ async def submit_feedback(
     feedback_id = f"FDB{random.randint(10000, 99999)}"
 
 
-    print(feedbackType)
+    
     
     # Create a new feedback entry
     new_feedback = SupportFeedback(
@@ -1475,9 +1515,17 @@ async def get_feed(request: Request, db: Session = Depends(get_db)):
 
     except HTTPException:
         raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = db.query(User).filter(User.user_id == logged_in_user_id).first()
+
+    role = user.role
+
+    back_url = "/emp_details" if role == "employee" else "/dash"
 
     # Query the database for all users except the logged-in user
     users = db.query(User.user_id, User.full_name).filter(User.user_id != logged_in_user_id).all()
+
+    
 
     users_with_initials = []
     for user in users:
@@ -1498,9 +1546,11 @@ async def get_feed(request: Request, db: Session = Depends(get_db)):
         {
             "request": request,
             "users": users_with_initials,
-            "logged_in_user_id": logged_in_user_id  # Pass user ID to template
+            "logged_in_user_id": logged_in_user_id,
+            "back_url": back_url 
         }
     )
+
 
 
 @app.get("/chatting")
@@ -1530,16 +1580,17 @@ async def chatting(emp2_id: str, request: Request, db: Session = Depends(get_db)
         )
         .first()
     )
-      # Mark messages from emp2 to emp1 as read
-    db.query(Message).filter(
-        Message.chat_id == chatroom.chat_id,
-        Message.sender_id == emp2_id,
-        Message.receiver_id == emp1_id,
-        Message.status == 'unread'
-    ).update({"status": "read"})
-    db.commit()
 
-    if not chatroom:
+    if chatroom:
+        db.query(Message).filter(
+            Message.chat_id == chatroom.chat_id,
+            Message.sender_id == emp2_id,
+            Message.receiver_id == emp1_id,
+            Message.status == 'unread'
+        ).update({"status": "read"})
+        db.commit()
+
+    else:
         # Generate a random unique chat ID
         chat_id = "CHT" + "".join(random.choices(string.digits, k=8))
         
@@ -1550,7 +1601,7 @@ async def chatting(emp2_id: str, request: Request, db: Session = Depends(get_db)
             emp2_id=emp2_id,
             created_date=datetime.now(timezone.utc)
         )
-        print(chatroom)
+       
         db.add(chatroom)
         db.commit()
         db.refresh(chatroom)
@@ -1572,6 +1623,7 @@ async def chatting(emp2_id: str, request: Request, db: Session = Depends(get_db)
             "emp2_id": emp2_id
         }
     )
+
 
 
 # WebSocket Connection Manager
@@ -1599,10 +1651,31 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+@app.get("/total_unread")
+async def get_total_unread(request: Request, db: Session = Depends(get_db)):
+    # Get user_id from the token
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        # Decode the JWT token to get user_id
+        token_data = decode_access_token(token.replace("Bearer ", ""))
+        user_id = token_data.get("user_id")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    # Count total unread messages for the logged-in user
+    total_unread = db.query(Message).filter(
+        Message.receiver_id == user_id,
+        Message.status == 'unread'
+    ).count()
+    
+    return {"total_unread": total_unread}
+
+
+
 # WebSocket Endpoint
-
-
-
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str, db: Session = Depends(get_db)):
     await manager.connect(user_id, websocket)
@@ -1629,7 +1702,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, db: Session = D
                 sender_id=sender_id,
                 receiver_id=receiver_id,
                 content=content,
-                timestamp=nepal_time  # Save Nepal local time
+                timestamp=nepal_time  
             )
             db.add(message)
             db.commit()
@@ -1642,10 +1715,11 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, db: Session = D
                 "sender_id": sender_id,
                 "receiver_id": receiver_id,
                 "content": content,
-                "timestamp": nepal_time.isoformat()  # Send the Nepal time in ISO format
+                "timestamp": nepal_time.isoformat()  
             }
 
             await manager.send_personal_message(response, receiver_id)
+            
 
             unread_count = db.query(Message).filter(
                 Message.sender_id == sender_id,
@@ -1657,8 +1731,14 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, db: Session = D
             notification = {
                 "type": "new_message",
                 "sender_id": sender_id,
-                "unread_count": unread_count
+                "unread_count": unread_count,
+                
             }
+
+            await manager.broadcast(notification)
+            
+
+            # Send message to sender
             await manager.send_personal_message(notification, receiver_id)
 
     except WebSocketDisconnect:
@@ -1682,39 +1762,214 @@ def get_chat_history(chat_id: str, db: Session = Depends(get_db)):
         for message in messages
     ]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # <<<<<<<<<<<<<--------------------------------------------------------------->>>>>>>>>>>>>.
 
 
+
+
+
+
+
+
+# ----------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# announcement
+@app.get("/announcements")
+async def get_announcements(request: Request, db: Session = Depends(get_db)):
+    
+    return templates.TemplateResponse("announcement_form.html", {"request": request})
+
+
+
+
+  
+
+
+
+
+
+
+@app.post("/submit_announcement")
+async def submit_announcement(
+    request: Request,
+    title: str = Form(...),
+    date: str = Form(...),
+    content: str = Form(...),
+    priority: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    while True:
+        random_id = f"ANM{random.randint(100, 999)}"
+        existing = db.query(Announcement).filter_by(announcement_id=random_id).first()
+        if not existing:
+            break
+    
+
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+      
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+
+    user_id = token_data.get("user_id")
+
+    utc_time = datetime.now(pytz.utc)
+
+    nepal_time = convert_utc_to_nepal_local(utc_time)
+    
+    # Create new announcement record
+    new_announcement = Announcement(
+        announcement_id=random_id,
+        title=title,
+        date=nepal_time,
+        content=content,
+        priority_level=priority,
+        manager_id=user_id  
+    )
+    
+    # Add the new announcement to the database
+    db.add(new_announcement)
+    db.commit()
+
+    users = db.query(User).all()
+    for user in users:
+        user.isannouncement_read = "false" 
+        user.isnotificationread = "false"
+
+    notification = Notification(
+            notification_id=f"NTF{random.randint(1000, 9999)}",
+            content="📢 A new announcement has been created. Check out the announcement page!",
+            date=nepal_time,
+            user_id=None,
+            task_id=None
+           
+            
+    )
+    db.add(notification)
+    db.commit()
+
+    # Return a success message and redirect
+    return templates.TemplateResponse(
+        "announcement_form.html",
+        {
+            "request": request,
+            "message": f"Announcement '{new_announcement.title}' Created successfully !",
+            "message_type": "success"
+        }
+    )
+
+
+
+
+
+
+
+@app.get("/check_unread_announcements")
+async def check_unread_announcements(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+    user_id = token_data.get("user_id")
+
+    user = db.query(User).filter(User.user_id == user_id).first()
+    return {"unread": user.isannouncement_read == "false"}
+
+
+
+
+
+
+
+@app.get("/view_announcements", response_class=HTMLResponse)
+async def view_announcements(
+    request: Request, 
+    db: Session = Depends(get_db), 
+    mark_as_read: bool = Query(False)
+):
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+    user_id = token_data.get("user_id")
+
+    user = db.query(User).filter(User.user_id == user_id).first()
+    unread = user and user.isannouncement_read == "false"
+
+    if mark_as_read and user:
+        user.isannouncement_read = "true"
+        db.commit()
+        unread = False  # Since we marked it as read
+
+    announcements = db.query(Announcement).order_by(Announcement.date.desc(), Announcement.priority_level).all()
+
+    return templates.TemplateResponse(
+        "see_announcement.html",
+        {"request": request, "announcements": announcements, "unread": unread}
+    )
+
+
+
+
+# notifications ko suru vayo hai
+@app.get("/view_notifications")
+def view_notifications(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+    user_id = token_data.get("user_id")
+
+    # Get notifications for this user
+    notifications = db.query(Notification).filter(
+        (Notification.user_id == user_id) | (Notification.user_id == None)
+    ).order_by(Notification.date.desc()).all()
+
+
+    # Update user's read status
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if user:
+        user.istask_read = True
+        user.isnotificationread = True
+        db.add(user)
+
+    db.commit()
+
+    return templates.TemplateResponse("notification.html", {"request": request, "notifications": notifications})
+
+
+
+
+
+@app.get("/mark_notifications_as_read")
+def mark_notifications_as_read(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token")
+    if not token:
+        return {"success": False}
+
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+    user_id = token_data.get("user_id")
+
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if user:
+        user.istask_read = True
+        user.isnotification_read = True
+        db.add(user)
+        db.commit()
+        return {"success": True}
+
+    return {"success": False}
+
+
+
+
+
+
+
+
+# ----------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
 

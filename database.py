@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, Date, DateTime, ForeignKey, func, Boolean, UniqueConstraint
+from sqlalchemy import create_engine, Column, Integer, String, Text, Date, DateTime, ForeignKey, func, Boolean, UniqueConstraint,Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Mapped
 from typing import Optional
@@ -23,6 +23,11 @@ class User(Base):
     position = Column(String(100), nullable=True)
     otp_code = Column(String(10), nullable=True)
     is_deleted = Column(Boolean, default=False, nullable=False)
+    isannouncement_read = Column(String(10))  
+    istask_read = Column(String(10))
+    isnotificationread = Column(String(10))
+
+    
 
 
     # One-to-many relationship with Post (a user can have many posts)
@@ -30,8 +35,10 @@ class User(Base):
     likes = relationship("Like", back_populates="user")
     comments = relationship("Comment", back_populates="user")
     support_feedbacks = relationship("SupportFeedback", back_populates="user")
-    chatrooms_as_emp1 = relationship("Chatroom", foreign_keys="[Chatroom.emp1_id]")
-    chatrooms_as_emp2 = relationship("Chatroom", foreign_keys="[Chatroom.emp2_id]")
+    chatrooms_as_emp1 = relationship("Chatroom", foreign_keys="[Chatroom.emp1_id]",  back_populates="emp1", overlaps="emp1, emp2")
+    chatrooms_as_emp2 = relationship("Chatroom", foreign_keys="[Chatroom.emp2_id]", back_populates="emp2", overlaps="emp1, emp2")
+    announcement = relationship("Announcement", back_populates="manager")
+
 
     # One-to-many relationship with Task (assigned to a user and assigned by a user)
     tasks_assigned_to = relationship("Task", foreign_keys="Task.assigned_to_id", back_populates="assigned_to")
@@ -133,22 +140,14 @@ class Chatroom(Base):
     emp1_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)  # Employee 1 ID
     emp2_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)  # Employee 2 ID
 
-    # Relationships
-    # messages = relationship("ChatMessage", back_populates="chatroom")
-    emp1 = relationship("User", foreign_keys=[emp1_id])  # Employee 1 user relationship
-    emp2 = relationship("User", foreign_keys=[emp2_id])
-    messages = relationship("ChatMessage", back_populates="chatroom")
+    # # Relationships
+    # # messages = relationship("ChatMessage", back_populates="chatroom")
+    # emp1 = relationship("User", foreign_keys=[emp1_id])  # Employee 1 user relationship
+    # emp2 = relationship("User", foreign_keys=[emp2_id])
 
+    emp1 = relationship("User", foreign_keys=[emp1_id], back_populates="chatrooms_as_emp1", overlaps="chatrooms_as_emp1,chatrooms_as_emp2")  
+    emp2 = relationship("User", foreign_keys=[emp2_id], back_populates="chatrooms_as_emp2", overlaps="chatrooms_as_emp1,chatrooms_as_emp2")
 
-class ChatMessage(Base):
-    __tablename__ = 'chatmessage'
-
-    msg_id = Column(Integer, ForeignKey('message.msg_id'), primary_key=True)  # Foreign key to Message table
-    chat_id = Column(String(10), ForeignKey('chatroom.chat_id'), nullable=False)
-
-    # Relationships
-    chatroom = relationship("Chatroom", back_populates="messages")
-    message = relationship("Message", back_populates="chat_message")
 
 
 class Message(Base):
@@ -163,12 +162,33 @@ class Message(Base):
     receiver_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)
 
     # Relationships
-    chat_message = relationship("ChatMessage", back_populates="message")
     sender = relationship("User", foreign_keys=[sender_id])
     receiver = relationship("User", foreign_keys=[receiver_id])
 
 
+class Announcement(Base):
+    __tablename__ = "announcement"
 
+    announcement_id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255), nullable=False)
+    date = Column(DateTime, nullable=False)
+    content = Column(Text, nullable=False)
+    priority_level = Column(String(50), nullable=False)
+    manager_id = Column(Integer, ForeignKey("user.user_id"), nullable=False) 
+
+    manager = relationship("User", back_populates="announcement")
+
+
+
+class Notification(Base):
+    __tablename__ = 'notification'
+    
+    notification_id = Column(String(255), primary_key=True)  
+    content = Column(Text, nullable=False)                    
+    date = Column(DateTime, default=func.now()) 
+    user_id = Column(String(50), ForeignKey("user.user_id"), nullable=True) 
+    task_id = Column(String(50), ForeignKey("task.task_id"), nullable=True)
+    
 
 # Create tables in the database
 Base.metadata.create_all(bind=engine)

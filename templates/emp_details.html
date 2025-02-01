@@ -243,7 +243,69 @@
   background-color: #f3f4f6;
 }
 
+.chat-link {
+    display: block;
+    text-decoration: none;
+    width: 100%;
+    max-width: 300px;
+  }
 
+  .chat-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.3s ease;
+    padding: 1rem 1.5rem;
+    position: relative;
+  }
+
+  .chat-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .counter {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background-color: #4F46E5;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    min-width: 1.5rem;
+    text-align: center;
+  }
+
+  .chat-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #4F46E5;
+    display: flex;
+    align-items: center;
+  }
+
+  .chat-icon {
+    height: 1.25rem;
+    width: 1.25rem;
+    margin-right: 0.5rem;
+  }
+
+  .chat-description {
+    font-size: 0.875rem;
+    color: #4B5563;
+    margin-top: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .chat-card {
+      padding: 1.5rem;
+    }
+
+    .chat-title {
+      font-size: 1.25rem;
+    }
+  }
 
 /* Add Comment input field */
 input[type="text"] {
@@ -389,19 +451,19 @@ input[type="text"] {
                             </div>
                         </a>
 
-                        <a href="/feed" class="block">
-                            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 md:p-6">
-                                <h3 class="text-lg md:text-xl font-semibold text-indigo-600 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                    Chat
-                                </h3>
-                                <p class="text-sm text-gray-600 mt-2">Communicate with your colleagues</p>
+                        <a href="/feed" class="chat-link">
+                            <div class="chat-card">
+                              <span class="counter" id="unread-count">2</span>
+                              <h3 class="chat-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="chat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                                Chat
+                              </h3>
+                              <p class="chat-description">Communicate with your colleagues</p>
                             </div>
-                        </a>
+                          </a>
 
 
                         <a href="/employee-details" class="block">
@@ -674,6 +736,32 @@ input[type="text"] {
     </div>
 </body>
 <script>
+
+   async function fetchUnreadCount() {
+        const response = await fetch('/total_unread', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${document.cookie.access_token}`
+            }
+        });
+        const data = await response.json();
+        const unreadCount = data.total_unread;
+        document.getElementById("unread-count").textContent = unreadCount;
+    }
+
+    // Call fetchUnreadCount initially
+    fetchUnreadCount();
+
+    // WebSocket connection to listen for real-time updates
+    const socket = new WebSocket("ws://127.0.0.1:8000/ws/{{ user_id }}");
+
+    socket.onmessage = function(event) {
+        const message = JSON.parse(event.data);
+        if (message.type === "new_message") {
+            // Fetch unread count again after receiving a new message
+            fetchUnreadCount();
+        }
+    };
 
 function getRandomColor() {
             const hue = Math.floor(Math.random() * 360);

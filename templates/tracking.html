@@ -206,45 +206,70 @@
     }
 
 
-        .recent-posts {
-            background-color: var(--card-background);
-            border-radius: 15px;
-            box-shadow: var(--shadow);
-            padding: 30px;
-            margin-top: 40px;
+    .recent-posts {
+            max-width: 1700px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
         }
 
         .post-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
+            grid-auto-flow: column;
+            grid-auto-columns: 300px;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            scroll-snap-type: x mandatory;
         }
 
         .post-card {
-            background: var(--background-color);
-            border-radius: 15px;
-            box-shadow: var(--shadow);
-            padding: 25px;
-            transition: var(--transition);
-        }
-
-        .post-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            scroll-snap-align: start;
         }
 
         .post-title {
-            font-weight: 600;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-            color: #2c3e50;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
         }
 
         .post-excerpt {
-            font-size: 0.95em;
-            color: var(--text-light);
-            line-height: 1.6;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* Scrollbar Styles */
+        .post-grid::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .post-grid::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .post-grid::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .post-grid::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        @media (max-width: 768px) {
+            .post-grid {
+                grid-auto-columns: 250px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -412,33 +437,45 @@
                 <h2 class="section-title">Recent Posts</h2>
 
                 <div class="post-grid">
-                    <div class="post-card">
-                        <div class="post-title">New design principles for our brand</div>
-                        <div class="post-excerpt">
-                            Exploring innovative ways to represent our brand identity through cohesive design elements and visual storytelling. Our new approach focuses on simplicity, versatility, and emotional connection with our audience.
+
+                    {% for post in user_posts %}
+                        <div class="post-card">
+                            <div class="post-title">{{ post.title }}</div>
+                            <div class="post-excerpt">
+                                {{ post.content }}
+                            </div>
                         </div>
-                    </div>
-                    <div class="post-card">
-                        <div class="post-title">Upcoming design trends for 2025</div>
-                        <div class="post-excerpt">
-                            Predicting the next big shifts in design and user experience, from augmented reality interfaces to sustainable digital practices. We're exploring how these trends will shape the future of our industry and user interactions.
-                        </div>
-                    </div>
-                    <div class="post-card">
-                        <div class="post-title">My experience at DesignCon 2024</div>
-                        <div class="post-excerpt">
-                            Insights and inspirations from the leading design conference, featuring cutting-edge technologies and thought-provoking discussions. I've gathered valuable insights on AI-driven design and sustainable UX practices.
-                        </div>
-                    </div>
-                    <div class="post-card">
-                        <div class="post-title">Improving user engagement through UI</div>
-                        <div class="post-excerpt">
-                            Strategies for creating more engaging and intuitive interfaces, focusing on micro-interactions and personalized user experiences. We're implementing these techniques to enhance our product's usability and user satisfaction.
-                        </div>
-                    </div>
+                    {% endfor %}
+
+                    
                 </div>
             </section>
         </main>
     </div>
 </body>
+<script>
+   document.addEventListener('DOMContentLoaded', function() {
+    const postGrid = document.getElementById('postGrid');
+    function createPostCard(post) {
+                const postCard = document.createElement('div');
+                postCard.className = 'post-card';
+
+                const postTitle = document.createElement('div');
+                postTitle.className = 'post-title';
+                postTitle.textContent = post.title;
+
+                const postExcerpt = document.createElement('div');
+                postExcerpt.className = 'post-excerpt';
+                postExcerpt.textContent = post.content;
+
+                postCard.appendChild(postTitle);
+                postCard.appendChild(postExcerpt);
+
+                return postCard;
+            }
+
+           
+        });
+        
+</script>
 </html>

@@ -34,6 +34,7 @@
             padding: 10px;
             font-size: 1.2em;
         }
+        
         .announcement {
             padding: 15px;
             border-bottom: 1px solid #eee;
@@ -100,54 +101,23 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="dashboard.html" class="back-link" aria-label="Go back to previous page">Back</a>
-        <h1>Company Announcements</h1>
-        <div id="announcements-container">
+   <div class="container">
+    <a href="/dashboard" class="back-link" aria-label="Go back to previous page">Back</a>
+    <h1>Company Announcements</h1>
+    <div id="announcements-container">
+        {% for announcement in announcements %}
             <div class="date-section">
-                <div class="date-header">Thursday, June 15, 2023</div>
-                <div class="announcement priority-high">
-                    <div class="priority-label">high</div>
-                    <h3>Quarterly Meeting</h3>
-                    <p>Our Q2 meeting will be held next Friday at 2 PM.</p>
-                </div>
-                <div class="announcement priority-medium">
-                    <div class="priority-label">medium</div>
-                    <h3>New Project Launch</h3>
-                    <p>We're excited to announce the launch of Project X.</p>
+                <div class="date-header">{{ announcement.date.strftime("%A, %B %d, %Y") }}</div>
+                
+                <div class="announcement {% if announcement.priority_level == 'high' %}priority-high{% elif announcement.priority_level == 'medium' %}priority-medium{% else %}priority-low{% endif %}">
+                    <div class="priority-label">{{ announcement.priority_level }}</div>
+                    <h3>{{ announcement.title }}</h3>
+                    <p>{{ announcement.content }}</p>
                 </div>
             </div>
-            
-            <div class="date-section">
-                <div class="date-header">Wednesday, June 14, 2023</div>
-                <div class="announcement priority-high">
-                    <div class="priority-label">high</div>
-                    <h3>Office Closure</h3>
-                    <p>The office will be closed for maintenance on June 20th.</p>
-                </div>
-                <div class="announcement priority-low">
-                    <div class="priority-label">low</div>
-                    <h3>Team Building Event</h3>
-                    <p>Join us for a team building event on June 25th.</p>
-                </div>
-            </div>
-            <div class="date-section">
-                <div class="date-header">Tuesday, June 13, 2023</div>
-                <div class="announcement priority-medium">
-                    <div class="priority-label">medium</div>
-                    <h3>IT System Update</h3>
-                    <p>IT systems will be updated on June 18th. Please save your work.</p>
-                </div>
-            </div>
-            <div class="date-section">
-                <div class="date-header">Monday, June 12, 2023</div>
-                <div class="announcement priority-low">
-                    <div class="priority-label">low</div>
-                    <h3>New Coffee Machine</h3>
-                    <p>A new coffee machine has been installed in the break room.</p>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div>
+</div>
+
 </body>
 </html>

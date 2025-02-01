@@ -413,6 +413,75 @@
             /* Same scale effect on focus */
         }
 
+        .announcement-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: #333;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    padding: 10px 15px;
+   
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+
+  .announcement-link:hover {
+    background-color: #e0e0e0;
+  }
+
+  .announcement-link i {
+    margin-right: 8px;
+    font-size: 18px;
+    color: #e1e5ea;
+  }
+
+  .announcement-counter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ff6b6b;
+    
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    padding: 0 6px;
+    margin-left: 8px;
+  }
+
+  .notify {
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+  }
+
+  .notify i {
+    color: white;
+    font-size: 1.3rem;
+  }
+
+  .notify-counter {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ff4757;
+    color: white;
+    font-size: 0.4rem;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    box-shadow: 0 0 0 2px #4a00e0; /* Assuming the background color of the header is #4a00e0 */
+  }
+
 
         /* Hide close icon by default */
         .close-icon {
@@ -463,7 +532,7 @@
 <body>
     <div class="container">
         <aside class="sidebar" id="sidebar">
-            <h2>AI EMS
+            <h2>WorkSphere AI 
                 <i class="fas fa-times close-icon"></i>
 
 
@@ -473,10 +542,13 @@
                 <a href="plag.html"><i class="fas fa-copy"></i> Plagiarism Detection</a>
                 <a href="/feedback"><i class="fas fa-comment-alt"></i> Feedback</a>
 
-                <a href="view_updates.html"><i class="fas fa-sync-alt"></i>Announcements</a>
+                <a href="/view_announcements?mark_as_read=true" class="announcement-link">
+                    <i class="fas fa-sync-alt"></i>
+                    Announcements
+                    <span id="announcement-indicator" style="color: red; font-size: 14px; display: none;">🔴</span>
+                  </a>
 
  
-                <a href="view.html"><i class="fas fa-folder-open"></i> Documents</a>
 
                 <a href="/logout">
                     <i class="fas fa-sign-out-alt"></i>
@@ -497,9 +569,25 @@
 
                 <div class="right-section">
 
-                    <a href="notification.html" style="background: none; border: none; cursor: pointer;" class="notify">
-                        <i class="fas fa-bell" style="color: white; font-size: 1.3rem;"></i>
+                    <!-- <a href="/view_notifications" class="notify">
+                        <i class="fas fa-bell"></i>
+                        <span class= "notify-counter" id="notification-indicator" style="color: red; font-size: 8px; display: none;"></span>
+                      </a> -->
+
+                      <a href="/view_notifications" class="notify">
+                        <i class="fas fa-bell"></i>
+                        {% if show_red_dot %}
+                        <span class="notify-counter" id="notification-indicator"
+                            style="color: red; font-size: 8px; display: inline;">
+                            
+                        </span>
+                        {% else %}
+                        <span class="notify-counter" id="notification-indicator"
+                            style="display: none;">
+                        </span>
+                        {% endif %}
                     </a>
+                    
 
                     <a href="/profile" style="background: none; border: none; cursor: pointer;">
                         <i class="fas fa-user-circle" style="color: white; font-size: 1.5rem;"></i>
@@ -549,9 +637,6 @@
                     </div>
                 </a>
                 
-                
-                
-
             </div>
     </div>
     </main>
@@ -564,6 +649,41 @@
     </a>
 
     <script>
+  async function checkUnreadAnnouncements() {
+        const response = await fetch("/check_unread_announcements");
+        const data = await response.json();
+        const redDot = document.getElementById("announcement-indicator");
+
+        if (data.unread) {
+            redDot.style.display = "inline";  // Show red dot
+        } else {
+            redDot.style.display = "none";  // Hide red dot
+        }
+    }
+
+    checkUnreadAnnouncements();
+
+    document.addEventListener("DOMContentLoaded", function() {
+    fetch('/check-unread')
+        .then(response => response.json())
+        .then(data => {
+            if (data.unread) {
+                document.getElementById("notification-indicator").style.display = "inline";
+            }
+        });
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelector(".notify").addEventListener("click", function() {
+        fetch("/mark_notifications_as_read")
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById("notification-indicator").style.display = "none";
+                }
+            });
+    });
+});
 
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');

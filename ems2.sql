@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 29, 2025 at 08:02 PM
+-- Generation Time: Feb 01, 2025 at 12:32 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -36,6 +36,27 @@ CREATE TABLE `announcement` (
   `manager_id` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `announcement`
+--
+
+INSERT INTO `announcement` (`announcement_id`, `title`, `date`, `content`, `priority_level`, `manager_id`) VALUES
+('ANM143', 'anuv jain conceprt price', '2025-01-31', 'as', 'Low', 'MGR001'),
+('ANM192', 'dvsa', '2025-02-01', 'cx ', 'Low', 'EMP005'),
+('ANM199', 'LearnHtml', '2025-01-31', 'sdfa', 'Low', 'MGR001'),
+('ANM211', 'dvsa', '2025-02-01', 'sdf', 'Low', 'MGR001'),
+('ANM304', 'ffaaaa', '2025-01-31', 'fsda', 'Low', 'MGR001'),
+('ANM319', 'anuv jain conceprt price', '2025-01-31', 'toicket', 'Low', 'MGR001'),
+('ANM460', 'LearnHtml', '2025-01-31', 'xcvz', 'Low', 'MGR001'),
+('ANM522', 'Lean jQUERY', '2025-01-31', 'sdaf', 'Low', 'MGR001'),
+('ANM542', 'Lean jQUERY', '2025-02-01', 'vfds', 'Low', 'MGR001'),
+('ANM680', 'maldives tour', '2025-02-01', 'vgfd', 'Low', 'MGR001'),
+('ANM784', 'LearnHtml', '2025-01-31', 'xcvz', 'Low', 'MGR001'),
+('ANM852', 'LearnHtml', '2025-02-01', 'vfd', 'Low', 'MGR001'),
+('ANM880', 'anuv jain conceprt price', '2025-01-31', 'ticket price distributiong', 'High', 'MGR001'),
+('ANM919', 'fv', '2025-02-01', 'vdf', 'Low', 'MGR001'),
+('ANM996', 'gfd', '2025-02-01', 'ga', 'Low', 'EMP005');
+
 -- --------------------------------------------------------
 
 --
@@ -55,7 +76,10 @@ CREATE TABLE `chatroom` (
 
 INSERT INTO `chatroom` (`chat_id`, `created_date`, `emp1_id`, `emp2_id`) VALUES
 ('CHT15460089', '2025-01-29 17:33:47', 'EMP005', 'MGR001'),
+('CHT20978789', '2025-01-30 12:19:06', 'MGR001', 'EMP006'),
 ('CHT29015803', '2025-01-27 11:53:40', 'EMP003', 'EMP003'),
+('CHT40719158', '2025-01-30 11:04:03', 'MGR001', 'EMP003'),
+('CHT51667911', '2025-01-30 11:27:16', 'MGR001', 'EMP004'),
 ('CHT71498751', '2025-01-27 14:22:49', 'EMP003', 'EMP004'),
 ('CHT72130153', '2025-01-27 10:38:40', 'EMP005', 'EMP004'),
 ('CHT77015626', '2025-01-27 10:48:08', 'EMP005', 'EMP006'),
@@ -147,42 +171,50 @@ CREATE TABLE `message` (
 --
 
 INSERT INTO `message` (`msg_id`, `content`, `timestamp`, `chat_id`, `sender_id`, `receiver_id`, `is_read`, `status`) VALUES
-('MSG0045', 'fg', '2025-01-29 23:58:24', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG0083', 'saf', '2025-01-29 23:57:23', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG0440', 'new', '2025-01-29 23:55:08', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG0597', 'dfh', '2025-01-29 23:58:09', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG0726', 'ki dil judna paye wapas', '2025-01-30 00:04:01', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG1096', 'sfd', '2025-01-29 23:56:47', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG1136', 'fhd', '2025-01-29 23:58:03', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG1538', 'sgh', '2025-01-29 23:58:36', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG1633', 'hunxa', '2025-01-30 00:04:16', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG1742', 'fw', '2025-01-29 23:56:10', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG1779', 'gfds', '2025-01-29 23:55:13', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG2327', 'gf', '2025-01-29 23:58:21', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG2379', 'dgf', '2025-01-29 23:57:39', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG2566', 'illawa', '2025-01-30 00:03:37', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG2845', 'new', '2025-01-29 23:56:03', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG3188', 'wfe', '2025-01-29 23:56:24', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG4396', 'nakaro', '2025-01-30 00:03:51', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG4533', 'we', '2025-01-29 23:56:35', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG5556', 'sda', '2025-01-29 23:47:19', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG5625', 'aisa', '2025-01-30 00:03:45', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG5702', 'uyterw', '2025-01-29 23:57:56', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG5907', 'as', '2025-01-29 23:47:04', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG5912', 'fh', '2025-01-29 23:58:27', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG6465', 'apil', '2025-01-29 23:45:44', 'CHT85527827', 'EMP005', 'EMP003', 0, 'sent'),
-('MSG6529', 'dsfg', '2025-01-29 23:58:40', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG6827', 'rn', '2025-01-29 23:56:52', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG7038', 'ok x ata', '2025-01-30 00:04:12', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG7073', 'new', '2025-01-29 23:45:49', 'CHT85527827', 'EMP003', 'EMP005', 0, 'sent'),
-('MSG7524', 'dfgs', '2025-01-29 23:48:31', 'CHT85527827', 'EMP005', 'EMP003', 0, 'sent'),
-('MSG7930', 'dsgfg', '2025-01-29 23:57:45', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG7980', 'sdf', '2025-01-29 23:56:39', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG8020', 'dsgf', '2025-01-29 23:48:34', 'CHT85527827', 'EMP003', 'EMP005', 0, 'sent'),
-('MSG8144', 'sa', '2025-01-29 23:47:36', 'CHT85527827', 'EMP005', 'EMP003', 0, 'sent'),
-('MSG8426', 'fd', '2025-01-29 23:55:24', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
-('MSG8442', 'husn', '2025-01-30 00:03:32', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
-('MSG9907', 'df', '2025-01-29 23:55:21', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read');
+('MSG0243', 'k xa bhai yr kbr', '2025-01-31 19:51:15', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
+('MSG2371', 'hunxa', '2025-02-01 16:56:04', 'CHT15460089', 'MGR001', 'EMP005', 0, 'read'),
+('MSG3924', 'gfdbs', '2025-01-31 19:51:51', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
+('MSG4394', 'ok ', '2025-02-01 16:55:54', 'CHT15460089', 'EMP005', 'MGR001', 0, 'read'),
+('MSG4502', 'la', '2025-02-01 16:56:00', 'CHT15460089', 'EMP005', 'MGR001', 0, 'unread'),
+('MSG4585', 'fdsg', '2025-01-31 19:52:08', 'CHT85527827', 'EMP005', 'EMP003', 0, 'unread'),
+('MSG4668', 'fdav', '2025-01-31 19:52:11', 'CHT85527827', 'EMP005', 'EMP003', 0, 'unread'),
+('MSG4836', 'dfsva', '2025-01-31 19:51:55', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
+('MSG4934', 'eh ho', '2025-01-31 19:51:27', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
+('MSG7371', 'k xa', '2025-02-01 16:54:06', 'CHT15460089', 'EMP005', 'MGR001', 0, 'read'),
+('MSG7599', 'thik xa yr', '2025-01-31 19:51:22', 'CHT85527827', 'EMP005', 'EMP003', 0, 'read'),
+('MSG9006', 'gfdsa', '2025-01-31 19:51:40', 'CHT85527827', 'EMP003', 'EMP005', 0, 'read'),
+('MSG9492', 'see u sson', '2025-02-01 16:54:38', 'CHT15460089', 'MGR001', 'EMP005', 0, 'read');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notification`
+--
+
+CREATE TABLE `notification` (
+  `notification_id` varchar(255) NOT NULL,
+  `content` text DEFAULT NULL,
+  `date` datetime DEFAULT current_timestamp(),
+  `user_id` varchar(20) DEFAULT NULL,
+  `task_id` varchar(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `notification`
+--
+
+INSERT INTO `notification` (`notification_id`, `content`, `date`, `user_id`, `task_id`) VALUES
+('NTF1009', '📢 A new announcement has been created. Check the announcement page!', '2025-02-01 13:20:20', NULL, NULL),
+('NTF2583', '📢 A new announcement has been created. Check the announcement page!', '2025-01-31 19:35:29', NULL, NULL),
+('NTF3253', '📢 A new announcement has been created. Check the announcement page!', '2025-02-01 00:11:48', NULL, NULL),
+('NTF3897', '📢 A new announcement has been created. Check the announcement page!', '2025-02-01 00:15:40', NULL, NULL),
+('NTF4043', 'New task assigned: Lean jQUERY', '2025-02-01 00:08:33', 'EMP003', 'TSK892'),
+('NTF7490', '📢 A new announcement has been created. Check out the announcement page!', '2025-02-01 16:56:35', NULL, NULL),
+('NTF8125', '📢 A new announcement has been created. Check the announcement page!', '2025-02-01 00:10:00', NULL, NULL),
+('NTF8291', 'New task assigned: sda, Check it out!', '2025-02-01 13:20:00', 'EMP005', 'TSK009'),
+('NTF8789', 'New task assigned: LearnHtml', '2025-01-31 23:58:22', 'EMP005', 'TSK029'),
+('NTF9516', 'New task assigned: dsva, Check it out!', '2025-02-01 13:20:50', 'EMP003', 'TSK675'),
+('NTF9556', '📢 A new announcement has been created. Check the announcement page!', '2025-02-01 13:04:26', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -278,7 +310,9 @@ CREATE TABLE `task` (
 --
 
 INSERT INTO `task` (`task_id`, `title`, `description`, `due_date`, `docs_path`, `status`, `assigned_to_id`, `assigned_by_id`, `deleted_at`) VALUES
+('TSK009', 'sda', '', '2025-02-19 00:00:00', NULL, 'Pending', 'EMP005', 'MGR001', NULL),
 ('TSK017', 'lesrn ds', 'xc', '2024-12-18 00:00:00', 'resources\\EMP005_jeevan_thapa\\train_using_pretrained_model_image_classifier.ipynb', 'Approved', 'EMP005', 'MGR001', '2024-12-13 13:15:04'),
+('TSK029', 'LearnHtml', '', '2025-01-17 00:00:00', NULL, 'Pending', 'EMP005', 'MGR001', NULL),
 ('TSK063', 'miraj', 'sanjennaq', '2024-12-21 00:00:00', 'resources\\EMP005_jeevan_thapa\\Screenshot 2024-12-18 125508.png', 'submitted', 'EMP005', 'MGR001', '0000-00-00 00:00:00'),
 ('TSK081', 'gf', 'vcb', '2025-01-02 00:00:00', 'resources\\EMP005_jeevan_thapa\\th.jpg', 'Approved', 'EMP005', 'MGR001', '2024-12-13 13:18:36'),
 ('TSK198', 'aa', '', '2024-12-27 00:00:00', NULL, 'Approved', 'EMP005', 'MGR001', '2024-12-13 13:44:55'),
@@ -288,10 +322,12 @@ INSERT INTO `task` (`task_id`, `title`, `description`, `due_date`, `docs_path`, 
 ('TSK331', 'ezsxrdctfvghbjn', '', '2024-12-21 00:00:00', NULL, 'Approved', 'EMP005', 'MGR001', '2024-12-13 13:26:52'),
 ('TSK551', 'hi', 'vdfbjas', '2024-12-19 00:00:00', 'resources\\EMP005_jeevan_thapa\\fine-tuning-image-model (1).ipynb', 'Approved', 'EMP005', 'MGR001', NULL),
 ('TSK620', 'hey gpt scrap', 'vcbngfhj', '2024-12-18 00:00:00', 'resources\\EMP005_jeevan_thapa\\proposal updated_final2.docx', 'Approved', 'EMP005', 'MGR001', '2024-12-13 13:27:02'),
-('TSK651', 'nn', '', '2024-12-26 00:00:00', NULL, 'Pending', 'EMP005', 'MGR001', NULL),
+('TSK651', 'nn', '', '2024-12-26 00:00:00', NULL, 'Pending', 'EMP005', 'MGR001', '2025-01-30 11:07:42'),
+('TSK675', 'dsva', '', '2025-02-05 00:00:00', NULL, 'Pending', 'EMP003', 'MGR001', NULL),
 ('TSK732', 'ezsxrdctfvghbjn', '', '2024-12-21 00:00:00', NULL, 'Approved', 'EMP005', 'MGR001', '2024-12-13 13:27:45'),
 ('TSK848', 'apil', '', '2024-12-21 00:00:00', NULL, 'Pending', 'EMP003', 'MGR001', NULL),
 ('TSK877', 'gfhjk', '', '2024-12-28 00:00:00', NULL, 'Approved', 'EMP004', 'MGR001', '2024-12-13 13:36:42'),
+('TSK892', 'Lean jQUERY', '', '2025-02-05 00:00:00', NULL, 'Pending', 'EMP003', 'MGR001', NULL),
 ('TSK897', 'hey gpt scrap', '', '2024-12-18 00:00:00', NULL, 'Approved', 'EMP005', 'MGR001', '2024-12-13 13:31:01');
 
 -- --------------------------------------------------------
@@ -310,19 +346,22 @@ CREATE TABLE `user` (
   `department_name` varchar(100) DEFAULT NULL,
   `position` varchar(100) DEFAULT NULL,
   `otp_code` varchar(100) DEFAULT NULL,
-  `is_deleted` tinyint(1) DEFAULT 0
+  `is_deleted` tinyint(1) DEFAULT 0,
+  `isannouncement_read` varchar(10) DEFAULT NULL,
+  `istask_read` varchar(10) DEFAULT NULL,
+  `isnotificationread` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`user_id`, `full_name`, `email`, `phone`, `password`, `role`, `department_name`, `position`, `otp_code`, `is_deleted`) VALUES
-('EMP003', 'shishir', 'shishircodeid07@gmail.com', '9863267573', 'apil', 'employee', 'Human Resources', 'hr head', '890066', 1),
-('EMP004', 'miraj', 'mirajdeepbhandari30@gmail.com', '79821964293', '123', 'employee', 'Engineering', 'consultant', '553518', 1),
-('EMP005', 'jeevan thapa', 'apilcode566@gmail.com', '42667986473', 'hey', 'employee', 'Engineering', 'head', '642809', 0),
-('EMP006', 'Don thapa', 'shishir@gmail.com', '09867004146', 'new', 'employee', NULL, NULL, NULL, 0),
-('MGR001', 'Apil thapa', 'apilthapa87@gmail.com', '79821964293', 'apil12', 'manager', NULL, NULL, '1234', 0);
+INSERT INTO `user` (`user_id`, `full_name`, `email`, `phone`, `password`, `role`, `department_name`, `position`, `otp_code`, `is_deleted`, `isannouncement_read`, `istask_read`, `isnotificationread`) VALUES
+('EMP003', 'shishir', 'shishircodeid07@gmail.com', '9863267573', 'apil', 'employee', 'Human Resources', 'hr head', '890066', 1, 'false', '1', 'false'),
+('EMP004', 'miraj', 'mirajdeepbhandari30@gmail.com', '79821964293', '123', 'employee', 'Engineering', 'consultant', '553518', 1, 'false', NULL, 'false'),
+('EMP005', 'jeevan thapa', 'apilcode566@gmail.com', '42667986473', 'hey', 'employee', 'Engineering', 'head', '642809', 0, 'true', '1', '1'),
+('EMP006', 'Don thapa', 'shishir@gmail.com', '09867004146', 'new', 'employee', NULL, NULL, NULL, 0, 'false', NULL, 'false'),
+('MGR001', 'Apil thapa', 'apilthapa87@gmail.com', '79821964293', 'apil12', 'manager', NULL, NULL, '1234', 0, 'false', NULL, 'false');
 
 --
 -- Indexes for dumped tables
@@ -367,6 +406,12 @@ ALTER TABLE `message`
   ADD KEY `chat_id` (`chat_id`),
   ADD KEY `sender_id` (`sender_id`),
   ADD KEY `receiver_id` (`receiver_id`);
+
+--
+-- Indexes for table `notification`
+--
+ALTER TABLE `notification`
+  ADD PRIMARY KEY (`notification_id`);
 
 --
 -- Indexes for table `post`

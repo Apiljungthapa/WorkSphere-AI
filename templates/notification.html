@@ -1,193 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Notifications - AI Employee Management</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
 
-        body {
-            background: linear-gradient(135deg, #e0e7ff 0%, #e0e7ff 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+      body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
 
+      .container {
+        background-color: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        width: 100%;
+        max-width: 550px;
+        transition: transform 0.3s ease;
+      }
+
+      .container:hover {
+        transform: translateY(-5px);
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px 20px;
+        display: flex;
+        align-items: center;
+        position: relative;
+      }
+
+      .back-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+
+      .back-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+      }
+
+      .header h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin: 0 auto;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .notifications {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 20px;
+      }
+
+      .notifications::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .notifications::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .notifications::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+      }
+
+      .notifications::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+
+      .notification {
+        background-color: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .notification:hover {
+        background-color: #e9ecef;
+        transform: translateX(5px);
+      }
+
+      .notification-content {
+        color: #333;
+        line-height: 1.6;
+        margin-bottom: 10px;
+        font-size: 1rem;
+      }
+
+      .notification-date {
+        font-size: 0.9rem;
+        color: #6c757d;
+        display: block;
+        text-align: right;
+      }
+
+      .no-notifications {
+        text-align: center;
+        color: #6c757d;
+        padding: 40px 20px;
+        font-size: 1.1rem;
+      }
+
+      @media (max-width: 600px) {
         .container {
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .header {
-            background: linear-gradient(to right, #4a00e0, #8e2de2);
-            color: white;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        .back-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            margin-right: 15px;
-            transition: transform 0.3s ease;
-        }
-
-        .back-btn:hover {
-            transform: translateX(-5px);
+          max-width: 100%;
+          border-radius: 0;
         }
 
         .header h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .notifications {
-            padding: 20px;
+          font-size: 1.5rem;
         }
 
         .notification {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: transform 0.3s ease;
+          padding: 15px;
         }
-
-        .notification:hover {
-            transform: translateY(-3px);
-        }
-
-        .notification-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .notification-title {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .notification-time {
-            font-size: 0.8rem;
-            color: #888;
-        }
-
-        .notification-content {
-            color: #555;
-            line-height: 1.4;
-        }
-
-        .notification-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-right: 15px;
-            font-size: 1.2rem;
-        }
-
-        .icon-task {
-            background-color: #ffeaa7;
-            color: #fdcb6e;
-        }
-
-        .icon-alert {
-            background-color: #ff7675;
-            color: #d63031;
-        }
-
-        .icon-info {
-            background-color: #74b9ff;
-            color: #0984e3;
-        }
-
-        .notification-item {
-            display: flex;
-            align-items: flex-start;
-        }
-
-        .no-notifications {
-            text-align: center;
-            color: #888;
-            padding: 20px;
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <a href="dashboard.html" class="back-btn">
-                <i class="fas fa-arrow-left"></i>
-            </a>
-            
-            <h1>Notifications</h1>
+      <div class="header">
+        <a href="/dashboard" class="back-btn">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+        <h1>Notifications</h1>
+      </div>
+      <div class="notifications">
+
+        {% for notification in notifications %}
+        <div class="notification">
+            <div class="notification-content">
+                {{ notification.content }}
+            </div>
+            <span class="notification-date">{{ notification.date }}</span>
         </div>
-        <div class="notifications">
-            <div class="notification">
-                <div class="notification-item">
-                    <div class="notification-icon icon-task">
-                        <i class="fas fa-tasks"></i>
-                    </div>
-                    <div>
-                        <div class="notification-header">
-                            <span class="notification-title">New Task Assigned</span>
-                            <span class="notification-time">2 hours ago</span>
-                        </div>
-                        <p class="notification-content">You have been assigned a new project: "AI Integration for HR Processes".</p>
-                    </div>
-                </div>
-            </div>
-            <div class="notification">
-                <div class="notification-item">
-                    <div class="notification-icon icon-alert">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div>
-                        <div class="notification-header">
-                            <span class="notification-title">Urgent: System Update</span>
-                            <span class="notification-time">1 day ago</span>
-                        </div>
-                        <p class="notification-content">Critical system update required. Please save your work and restart the application.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="notification">
-                <div class="notification-item">
-                    <div class="notification-icon icon-info">
-                        <i class="fas fa-info-circle"></i>
-                    </div>
-                    <div>
-                        <div class="notification-header">
-                            <span class="notification-title">Team Meeting Reminder</span>
-                            <span class="notification-time">3 days ago</span>
-                        </div>
-                        <p class="notification-content">Don't forget about the team meeting tomorrow at 10 AM in the virtual conference room.</p>
-                    </div>
-                </div>
-            </div>
+    {% endfor %}
+    
+    {% if not notifications %}
+        <div class="no-notifications">
+            <p>No new notifications at the moment.</p>
         </div>
+    {% endif %}
+    
+
+      </div>
     </div>
-</body>
+  </body>
+  <script>
+document.addEventListener("DOMContentLoaded", function() {
+    fetch('/view_notifications')
+        .then(response => response.json())
+        .then(data => {
+            // All notifications marked as read
+        });
+});  </script>
 </html>
