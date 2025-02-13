@@ -137,12 +137,13 @@
     </style>
 </head>
 
+
 <body>
     <div class="container">
-
         <h1>Assign New Employee</h1>
-        <form id="editEmployeeForm">
-          
+        <form action="/update-employee" method="post">
+            <input type="hidden" name="user_id" value="{{ user.user_id }}"> 
+
             <div class="form-group">
                 <label for="department">Department</label>
                 <select id="department" name="department" required>
@@ -155,30 +156,19 @@
                 </select>
             </div>
 
-            
             <div class="form-group">
                 <label for="position">Position</label>
                 <input type="text" id="position" name="position" required>
             </div>
 
             <div class="btn-group">
-                <a href="employee.html" class="btn btn-secondary" style="text-decoration: none;">Cancel</a>
-
-
+                <a href="/employee" class="btn btn-secondary" style="text-decoration: none;">Cancel</a>
                 <button type="submit" class="btn btn-primary">Save Changes</button>
             </div>
         </form>
     </div>
-
-    <script>
-        document.getElementById('editEmployeeForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            // Here you would typically send the form data to your backend
-            alert('Employee details updated successfully!');
-            // Redirect back to the employee list page
-            window.location.href = 'employee-list.html';
-        });
-    </script>
 </body>
+
+
 
 </html>

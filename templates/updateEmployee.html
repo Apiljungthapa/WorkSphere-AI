@@ -159,22 +159,14 @@
   
           <div class="form-group">
               <label for="position">New Position</label>
-              <select id="position" name="position" required>
-                  <option value="junior_developer" {% if user.position == 'junior_developer' %}selected{% endif %}>Junior Developer</option>
-                  <option value="senior_developer" {% if user.position == 'senior_developer' %}selected{% endif %}>Senior Developer</option>
-                  <option value="head" {% if user.position == 'head' %}selected{% endif %}>Head</option>
-                  <option value="mid_level" {% if user.position == 'mid_level' %}selected{% endif %}>Mid Level</option>
-                  <option value="other" {% if user.position == 'other' %}selected{% endif %}>Other</option>
-              </select>
+              <input type="text" id="position" name="position" value="{{ user.position }}" required>
           </div>
   
           <div class="btn-group">
-            <a href="{{ url_for('tracking_page') }}" class="btn btn-secondary" style="text-decoration: none">Cancel</a>
-
-
-
-              <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="/tracking.html?user_id={{ user.user_id }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
           </div>
+
       </form>
   </div>
   
