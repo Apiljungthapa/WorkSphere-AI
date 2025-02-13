@@ -22,7 +22,7 @@ class User(Base):
     department_name = Column(String(100), nullable=True)
     position = Column(String(100), nullable=True)
     otp_code = Column(String(10), nullable=True)
-    is_deleted = Column(Boolean, default=False, nullable=False)
+    is_deleted = Column(Boolean, default='0', nullable=False)
     isannouncement_read = Column(String(10))  
     istask_read = Column(String(10))
     isnotificationread = Column(String(10))
@@ -35,6 +35,7 @@ class User(Base):
     likes = relationship("Like", back_populates="user")
     comments = relationship("Comment", back_populates="user")
     support_feedbacks = relationship("SupportFeedback", back_populates="user")
+    
     chatrooms_as_emp1 = relationship("Chatroom", foreign_keys="[Chatroom.emp1_id]",  back_populates="emp1", overlaps="emp1, emp2")
     chatrooms_as_emp2 = relationship("Chatroom", foreign_keys="[Chatroom.emp2_id]", back_populates="emp2", overlaps="emp1, emp2")
     announcement = relationship("Announcement", back_populates="manager")
@@ -56,7 +57,7 @@ class Task(Base):
     due_date = Column(Date, nullable=True)
     docs_path = Column(String(255), nullable=True)
     status = Column(String(50), default="Pending", nullable=False)
-    deleted_at = Column(Date, nullable=True)
+    is_deleted = Column(String(10), nullable=True,default='0')
 
     # Foreign keys
     assigned_to_id = Column(String(10), ForeignKey("user.user_id"), nullable=True)
@@ -78,7 +79,7 @@ class Post(Base):
     likes = Column(Integer, default=0)
     created_date = Column(DateTime, nullable=False)
     user_id = Column(String(50), ForeignKey("user.user_id"), nullable=True)
-    deleted_at = Column(Integer, default=0)
+    is_deleted = Column(String(10), nullable=True,default='0')
 
     # Relationship with User
     author = relationship("User", back_populates="posts")
@@ -94,6 +95,7 @@ class Like(Base):
     like_id = Column(Integer, primary_key=True, index=True)
     post_id = Column(Integer, ForeignKey("post.post_id", ondelete="CASCADE"), nullable=False)
     user_id = Column(String(10), ForeignKey("user.user_id", ondelete="CASCADE"), nullable=False)
+    is_deleted = Column(String(10), nullable=True,default='0')
 
     # Ensure a user can like a post only once
     __table_args__ = (UniqueConstraint('post_id', 'user_id', name='unique_post_user_like'),)
@@ -112,6 +114,7 @@ class Comment(Base):
     comment_date = Column(DateTime, nullable=False)  # Date and time of the comment
     post_id = Column(Integer, ForeignKey('post.post_id'), nullable=False)  # Foreign key to the Post table
     user_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)  # Foreign key to the User table
+    is_deleted = Column(String(10), nullable=True,default='0')
 
     # Relationships
     post = relationship('Post', back_populates='comments') 
@@ -126,6 +129,8 @@ class SupportFeedback(Base):
     message = Column(Text, nullable=False)  
     user_id = Column(String(10), ForeignKey("user.user_id", ondelete="CASCADE"), nullable=False)  
     created_at = Column(DateTime, default=func.now(), nullable=False) 
+    feedback_summary = Column(String(20), nullable=True)
+    is_deleted = Column(String(10), nullable=True,default='0')
 
     # Relationships
     user = relationship("User", back_populates="support_feedbacks")
@@ -139,6 +144,7 @@ class Chatroom(Base):
     created_date = Column(DateTime, default=datetime.utcnow)
     emp1_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)  # Employee 1 ID
     emp2_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)  # Employee 2 ID
+    is_deleted = Column(String(10), nullable=True,default='0')
 
     # # Relationships
     # # messages = relationship("ChatMessage", back_populates="chatroom")
@@ -155,11 +161,12 @@ class Message(Base):
 
     msg_id = Column(Integer, primary_key=True)
     content = Column(String, nullable=False)
-    status = Column(String, default='sent')  # e.g., 'sent', 'delivered', 'read'
+    status = Column(String, default='sent')  
     timestamp = Column(DateTime, default=datetime.now(timezone.utc))
     chat_id = Column(String(10), ForeignKey('chatroom.chat_id'), nullable=False)
     sender_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)
     receiver_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)
+    is_deleted = Column(String(10), nullable=True,default='0')
 
     # Relationships
     sender = relationship("User", foreign_keys=[sender_id])

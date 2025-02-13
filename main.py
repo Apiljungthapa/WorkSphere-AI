@@ -56,7 +56,7 @@ def generate_unique_user_id(role: str, db: Session) -> str:
         .first()
     )
     if last_user and last_user.user_id.startswith(prefix):
-        # Extract numeric part, increment, and format
+
         last_id_num = int(last_user.user_id[len(prefix):])
         new_id_num = last_id_num + 1
     else:
@@ -105,7 +105,7 @@ async def user_register(
         full_name=full_name,
         email=email,
         phone=phone,
-        password=password,  # Hash password in production
+        password=password,  
         role=role,
     )
     db.add(new_user)
@@ -146,8 +146,11 @@ async def user_login(
     otp_code: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    # Fetch the user from the database by email
-    user = db.query(User).filter(User.email == email).first()
+    user = db.query(User).filter(User.email == email, User.is_deleted == '0').first()
+
+    # Check if user exists and is not deleted
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found or account deleted")
 
     # Check if user exists
     if user is None:
@@ -305,14 +308,27 @@ async def delete_user(request: Request, user_id: str = Form(...), db: Session = 
 async def edit_employee(user_id: str, request: Request, db: Session = Depends(get_db)):
 
     user = db.query(User).filter(User.user_id == user_id).first()
+    print("edit html page wla id",user)
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return templates.TemplateResponse("updateEmployee.html", {
+    return templates.TemplateResponse("edit.html", {
         "request": request,
         "user": user,
     })
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # quque gareko wala code ho yo..
@@ -352,6 +368,8 @@ async def update_employee(
     position: str = Form(...),
     db: Session = Depends(get_db),
 ):
+    
+    print("ds",user_id,department,position)
     user = db.query(User).filter(User.user_id == user_id).first()
 
     if not user:
@@ -363,6 +381,8 @@ async def update_employee(
     otp_code = random.randint(100000, 999999)
     user.otp_code = otp_code
     db.commit()
+
+    print(user.email)
 
     # Send OTP via email using SendGrid
     message = Mail(
@@ -407,7 +427,6 @@ def assign_task(
     request: Request,
     title: str = Form(...),
     assigned_to_id: str = Form(...),
-      
     dueDate: str = Form(...),
     db: Session = Depends(get_db),
 ):
@@ -471,14 +490,15 @@ async def submission(
 ):
     """
     Fetch the task details by task_id and render the submission page.
+    Only fetch tasks that are not soft-deleted (is_deleted = 0).
     """
 
-    task = db.query(Task).filter(Task.task_id == task_id).first()
+    task = db.query(Task).filter(Task.task_id == task_id, Task.is_deleted == 0).first()
 
     if not task:
         return templates.TemplateResponse(
             "error.html",
-            {"request": request, "message": "Task not found."},
+            {"request": request, "message": "Task not found or deleted."},
             status_code=404,
         )
 
@@ -490,6 +510,7 @@ async def submission(
             "task_title": task.title,
         },
     )
+
 
 def create_user_directory(user_id: int, full_name: str) -> Path:
     """
@@ -509,7 +530,6 @@ async def create_task(
     task_id: str = Form(...),  
     db: Session = Depends(get_db),
 ):
-    print("Received task id:", task_id)
     
     token = request.cookies.get("access_token")
     if not token:
@@ -559,7 +579,8 @@ async def assignment(request: Request, db: Session = Depends(get_db)):
     token_data = decode_access_token(token.replace("Bearer ", ""))
     user_id = token_data.get("user_id")
 
-    tasks = db.query(Task).filter(Task.assigned_to_id == user_id).all()
+    tasks = db.query(Task).filter(Task.assigned_to_id == user_id, Task.is_deleted == 0).all()
+
 
     tasks_with_manager = []
     for task in tasks:
@@ -674,6 +695,7 @@ async def submit_update(
 
 # -----------------------------------------------------------------------
 # post fetch garera dekhaune
+
 @app.get("/emp_details", response_class=HTMLResponse)
 async def employee_details_page(request: Request, db: Session = Depends(get_db)):
 
@@ -727,12 +749,6 @@ async def employee_details_page(request: Request, db: Session = Depends(get_db))
     response.delete_cookie("message_type")
 
     return response
-
-
-
-
-
-
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
@@ -873,7 +889,8 @@ def fetch_posts_for_user(user_id: str, db: Session) -> list:
 
     posts = db.query(Post).join(User).filter(
         User.department_name == current_user_department,
-        Post.deleted_at == 0  
+        Post.is_deleted  == 0,
+        User.is_deleted == 0,
     ).all()
 
 
@@ -961,7 +978,7 @@ async def soft_delete_post(post_id: str, request: Request, db: Session = Depends
         if not post:
             raise HTTPException(status_code=404, detail="Post not found")
         
-        post.deleted_at = 1  
+        post.is_deleted = 1  
         db.commit()
 
         # Set success message in cookies
@@ -969,6 +986,7 @@ async def soft_delete_post(post_id: str, request: Request, db: Session = Depends
         response.set_cookie("message", "Post deleted successfully!")
         response.set_cookie("message_type", "success")
         return response
+    
     except Exception as e:
         print(f"Error during deletion: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete the post")
@@ -988,7 +1006,11 @@ def toggle_like(action: str, post_id: str, request: Request, db: Session = Depen
     token_data = decode_access_token(token.replace("Bearer ", ""))
     user_id = token_data.get("user_id")
 
-    post = db.query(Post).filter(Post.post_id == post_id).first()
+    user = db.query(User).filter(User.user_id == user_id, User.is_deleted == 0).first()
+    if not user:
+        raise HTTPException(status_code=403, detail="User is deleted or not found")
+
+    post = db.query(Post).filter(Post.post_id == post_id, Post.is_deleted == 0).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
@@ -1071,7 +1093,7 @@ def fetch_comments_for_posts(posts: list, db: Session) -> dict:
     comments = (
         db.query(Comment, User.full_name)
         .join(User, User.user_id == Comment.user_id)
-        .filter(Comment.post_id.in_(post_ids))
+        .filter(Comment.post_id.in_(post_ids), Comment.is_deleted == 0)
         .all()
     )
 
@@ -1095,15 +1117,15 @@ def fetch_comments_for_posts(posts: list, db: Session) -> dict:
 
 
 # aba manager ko perspecive bata suru vyo
-
 @app.get("/dash", response_class=HTMLResponse)
 async def fetch_details_employees(request: Request, db: Session = Depends(get_db)):
-
-    users = db.query(User).filter(User.is_deleted == False).all()
-
+    users = db.query(User).filter(
+        User.is_deleted == 0,  # 0 means not soft-deleted
+        User.otp_code.isnot(None),  # Ensure OTP code is not None
+        User.otp_code != ""  # Ensure OTP code is not an empty string
+    ).all()
 
     unique_departments = {user.department_name for user in users if user.department_name}
-
 
     employee_data = [
         {
@@ -1115,30 +1137,24 @@ async def fetch_details_employees(request: Request, db: Session = Depends(get_db
         for user in users if user.role == 'employee'  # Only include employees
     ]
 
-
     token = request.cookies.get("access_token")
     
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
 
     token_data = decode_access_token(token.replace("Bearer ", ""))
     user_id = token_data.get("user_id")
     role = token_data.get("role")
 
-
     if role != "manager":
-
         employee_data = [
             employee for employee in employee_data if employee["department"] == token_data.get("department")
         ]
-    
 
     department_stats = {
         "total_employees": len(employee_data),
         "total_departments": len(unique_departments),
     }
-
 
     return templates.TemplateResponse(
         "dash.html", 
@@ -1154,31 +1170,34 @@ async def fetch_details_employees(request: Request, db: Session = Depends(get_db
 
 
 
+
 @app.get("/tracking.html", response_class=HTMLResponse)
 async def tracking_page(request: Request, user_id: str = None, db: Session = Depends(get_db)):
 
     if user_id:
 
-        employee = db.query(User).filter(User.user_id == user_id).first()
+        employee = db.query(User).filter(User.user_id == user_id, User.is_deleted == '0').first()
+
         if not employee:
             raise HTTPException(status_code=404, detail="Employee not found")
 
 
         query = db.query(Task).filter(
-            Task.assigned_to_id == user_id,  # Tasks assigned to the user
-            Task.deleted_at == None  # Exclude soft-deleted tasks
+            Task.assigned_to_id == user_id,
+            Task.is_deleted == '0',
+            Task.is_deleted == None  # Exclude soft-deleted tasks
         )
 
 
         pending_tasks = query.filter(Task.status == "Pending").all()
 
         # Fetch all posts created by the user
-        user_posts = db.query(Post).filter(Post.user_id == user_id).all()
+        user_posts = db.query(Post).filter(Post.user_id == user_id,Post.is_deleted == '0').all()
 
         submitted_or_approved_tasks = db.query(Task).filter(
                 Task.assigned_to_id == user_id,
-                Task.deleted_at == None,  # Exclude soft-deleted tasks
-                Task.status.in_(["submitted", "Approved"])  # Only submitted or approved tasks
+                Task.is_deleted == '0',
+                Task.status.in_(["submitted", "Approved"])  
             ).all()
 
 
@@ -1252,7 +1271,7 @@ async def delete_task(task_id: str, user_id: str, db: Session = Depends(get_db))
         raise HTTPException(status_code=404, detail="Task not found or already deleted") 
 
 
-    task.deleted_at = datetime.now(timezone.utc)
+    task.is_deleted == 1
 
     db.commit()
 
@@ -1270,18 +1289,17 @@ async def pending_tasks_page(user_id: str, request: Request, db: Session = Depen
 
 
     tasks = db.query(Task).filter(
-        Task.assigned_to_id == user_id,  # Tasks assigned to the user
+        Task.assigned_to_id == user_id,  
         Task.deleted_at == None,  
         Task.status == "Pending"  
     ).all()
-
 
     return templates.TemplateResponse(
         "tracking.html",
         {
             "request": request,
             "employee": employee,  
-            "tasks": tasks,  # Include only pending tasks
+            "tasks": tasks, 
         }
     )
 
@@ -1297,9 +1315,10 @@ async def update_employee_page(request: Request, user_id: str, db: Session = Dep
         "updateEmployee.html", 
         {
             "request": request,
-            "user": user  # Pass user data to the template
+            "user": user  
         }
     )
+
 
 @app.post("/update_personal_detail")
 async def update_personal_detail(request: Request, db: Session = Depends(get_db)):
@@ -1315,13 +1334,9 @@ async def update_personal_detail(request: Request, db: Session = Depends(get_db)
     if not user:
         raise HTTPException(status_code=404, detail="Employee not found")
 
-
     user.department_name = department
     user.position = position
-
-
     db.commit()
-
 
     return RedirectResponse(url=f"/tracking.html?user_id={user_id}", status_code=303)
 
@@ -1330,30 +1345,39 @@ async def update_personal_detail(request: Request, db: Session = Depends(get_db)
 
 @app.get("/delete_user/{user_id}")
 async def delete_user(user_id: str, db: Session = Depends(get_db)):
-    """
-    Soft delete a user by setting is_deleted to True and recording the deleted_at timestamp.
-    """
-    # Find the user in the database
+    
     user = db.query(User).filter(User.user_id == user_id, User.is_deleted == False).first()
 
-    print("ds", user)
     if not user:
         raise HTTPException(status_code=404, detail="User not found or already deleted")
 
-    # Soft delete the user
-    user.is_deleted = True
-    user.deleted_at = datetime.now(timezone.utc)  # Record deletion timestamp
+    # Soft delete user by setting is_deleted = 1
+    user.is_deleted = 1
+
+    # Soft delete all related records
+    db.query(Post).filter(Post.user_id == user_id).update({"is_deleted": 1})
+    db.query(Comment).filter(Comment.user_id == user_id).update({"is_deleted": 1})
+    db.query(Like).filter(Like.user_id == user_id).update({"is_deleted": 1})
+    db.query(SupportFeedback).filter(SupportFeedback.user_id == user_id).update({"is_deleted": 1})
+    db.query(Chatroom).filter(
+    (Chatroom.emp1_id == user_id) | (Chatroom.emp2_id == user_id)
+    ).update({"is_deleted": '1'})
+    db.query(Task).filter(
+        (Task.assigned_to_id == user_id) | (Task.assigned_by_id == user_id)
+    ).update({"is_deleted": '1'})
+
+    db.query(Message).filter(
+        (Message.sender_id == user_id) | (Message.receiver_id == user_id)
+    ).update({"is_deleted": '1'})
+
     db.commit()
 
-    # Redirect back to the tracking page
     return RedirectResponse(url="/dash", status_code=303)
 
 
 @app.get("/feedback", response_class=HTMLResponse)
 async def feedback_page(request: Request, db: Session = Depends(get_db)):
-    # Here you can fetch any necessary data, or handle feedback form processing
-
-    # Prepare the template response
+    
     return templates.TemplateResponse("feedback.html", {"request": request})
 
 
@@ -1430,10 +1454,10 @@ async def render_sentiments_page(request: Request, db: Session = Depends(get_db)
             SupportFeedback.message,
             SupportFeedback.created_at,
             SupportFeedback.feedback_summary,
-            User.full_name  # Fetch full_name from User table
+            User.full_name  
         )
-        .join(User, SupportFeedback.user_id == User.user_id)  # Join condition
-        .filter(SupportFeedback.created_at >= thirty_days_ago)  # Filter last 30 days feedback
+        .join(User, SupportFeedback.user_id == User.user_id)  
+        .filter(SupportFeedback.created_at >= thirty_days_ago, SupportFeedback.is_deleted == 0)
         .all()
     )
 
@@ -1571,15 +1595,15 @@ async def get_feed(request: Request, db: Session = Depends(get_db)):
     except HTTPException:
         raise HTTPException(status_code=401, detail="Invalid token")
     
-    user = db.query(User).filter(User.user_id == logged_in_user_id).first()
+    user = db.query(User).filter(User.user_id == logged_in_user_id, User.is_deleted == 0).first()
+
 
     role = user.role
 
     back_url = "/emp_details" if role == "employee" else "/dash"
 
     # Query the database for all users except the logged-in user
-    users = db.query(User.user_id, User.full_name).filter(User.user_id != logged_in_user_id).all()
-
+    users = db.query(User.user_id, User.full_name).filter(User.user_id != logged_in_user_id,User.is_deleted == 0).all()
     
 
     users_with_initials = []
@@ -1622,9 +1646,13 @@ async def chatting(emp2_id: str, request: Request, db: Session = Depends(get_db)
 
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid token")
-    print(emp2_id)
+    
 
-  
+    emp1 = db.query(User).filter(User.user_id == emp1_id, User.is_deleted == 0).first()
+    emp2 = db.query(User).filter(User.user_id == emp2_id, User.is_deleted == 0).first()
+
+    if not emp1 or not emp2:
+        raise HTTPException(status_code=404, detail="One or both users are deleted or not found")
 
     # Check if a chatroom exists between emp1 and emp2
     chatroom = (
@@ -1820,27 +1848,12 @@ def get_chat_history(chat_id: str, db: Session = Depends(get_db)):
 # <<<<<<<<<<<<<--------------------------------------------------------------->>>>>>>>>>>>>.
 
 
-
-
-
-
-
-
 # ----------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # announcement
 @app.get("/announcements")
 async def get_announcements(request: Request, db: Session = Depends(get_db)):
     
     return templates.TemplateResponse("announcement_form.html", {"request": request})
-
-
-
-
-  
-
-
-
-
 
 
 @app.post("/submit_announcement")
