@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Form, Depends, Request, HTTPException, Query, UploadFile, File, Response, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session,sessionmaker
-from database import get_db, User, Task, Post, Like, Comment, SupportFeedback, Chatroom, Message, Announcement, Notification
+from database import get_db, User, Task, Post, Like, Comment, SupportFeedback, Chatroom, Message, Announcement, Notification, ChatHistory
 from fastapi.security import OAuth2PasswordBearer
 import random
 from sendgrid import SendGridAPIClient
@@ -23,13 +23,17 @@ from typing import Dict, List
 from utils import generate_initials, convert_utc_to_nepal_local
 import pytz 
 from sentiment import SentimentAnalyzer
-
+from summarizer import DocumentSummarizer
+from rag import process_pdf_query,RAGSystem
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MODEL_DIR = os.path.join(BASE_DIR, "sentimentmodel", "checkpoint-1500")
 
 sentiment_analyzer = SentimentAnalyzer(MODEL_DIR)
+
+summarizer = DocumentSummarizer()
+
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -1747,12 +1751,17 @@ async def get_total_unread(request: Request, db: Session = Depends(get_db)):
         user_id = token_data.get("user_id")
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid token")
-    
-    # Count total unread messages for the logged-in user
-    total_unread = db.query(Message).filter(
-        Message.receiver_id == user_id,
-        Message.status == 'unread'
-    ).count()
+        
+    total_unread = (
+        db.query(Message)
+        .join(User, User.user_id == Message.receiver_id)
+        .filter(
+            Message.receiver_id == user_id,
+            Message.status == 'unread',
+            User.is_deleted == 0  # Exclude messages for deleted users
+        )
+        .count()
+    )
     
     return {"total_unread": total_unread}
 
@@ -1770,6 +1779,10 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, db: Session = D
             sender_id = data["sender_id"]
             receiver_id = data["receiver_id"]
             content = data["content"]
+
+            receiver = db.query(User).filter(User.user_id == receiver_id, User.is_deleted == 0).first()
+            if not receiver:
+                continue 
             
             # Get the current UTC time and convert to Nepal time
             utc_time = datetime.now(pytz.utc)
@@ -1803,11 +1816,17 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, db: Session = D
 
             await manager.send_personal_message(response, receiver_id)
             
+            # unread_count = db.query(Message).filter(
+            #     Message.sender_id == sender_id,
+            #     Message.receiver_id == receiver_id,
+            #     Message.status == 'unread'
+            # ).count()
 
-            unread_count = db.query(Message).filter(
+            unread_count = db.query(Message).join(User, User.id == Message.receiver_id).filter(
                 Message.sender_id == sender_id,
                 Message.receiver_id == receiver_id,
-                Message.status == 'unread'
+                Message.status == 'unread',
+                User.is_deleted == 0  
             ).count()
 
             # Send notification to receiver's feed
@@ -2032,12 +2051,169 @@ def mark_notifications_as_read(request: Request, db: Session = Depends(get_db)):
 
 
 
+# ----------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+
+
+@app.get("/summary")
+async def get_summary(request: Request, db: Session = Depends(get_db)):
+    
+    return templates.TemplateResponse("summarize.html", {"request": request})
+
+
+@app.post("/upload-file", response_class=HTMLResponse)
+async def upload_file(request: Request, db: Session = Depends(get_db), file: UploadFile = File(...)):
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+    user_id = token_data.get("user_id")
+
+    # Fetch user from the database
+    user = db.query(User).filter(User.user_id == user_id, User.is_deleted == 0).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    full_name = user.full_name  # Get the full_name from user
+
+    user_directory = f"resources/{user_id}_{full_name}"
+
+    if not os.path.exists(user_directory):
+        os.makedirs(user_directory)
+
+    file_path = os.path.join(user_directory, file.filename)
+
+    # Save the uploaded file to the directory
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+
+    return JSONResponse(content={"file_path": file_path})
+
+@app.get("/summarize", response_class=HTMLResponse)
+async def summarize_text(request: Request, file_path: str = Query(...)):
+        
+    file_path = Path(file_path)
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # Summarizer Integration
+    summary = summarizer.summarize_document(str(file_path))
+
+    print(summary)
+
+    return JSONResponse(content={"summary": summary})
+
+    # return templates.TemplateResponse(
+    #     "summarize.html",
+    #     {
+    #         "request": request,
+    #         "summary": summary,
+    #         "file_path": str(file_path),
+    #     },
+    # )
 
 
 
 
 # ----------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# Ragg -------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+@app.get("/rag")
+async def generate_rag(request: Request, db: Session = Depends(get_db)):  
+    return templates.TemplateResponse("rag.html", {"request": request})
+
+@app.post("/upload-rag-file", response_class=JSONResponse)
+async def upload_rag_file(
+    request: Request,
+    db: Session = Depends(get_db),
+    file: UploadFile = File(None),  # Optional file (can be None)
+    question: str = Form(...),
+    file_path: str = Form(None)  # Store file path for reuse
+):
+    """Handles file upload & allows subsequent queries without re-uploading the file."""
+
+    # Authenticate User
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token_data = decode_access_token(token.replace("Bearer ", ""))
+    user_id = token_data.get("user_id")
+
+    # Fetch user from database
+    user = db.query(User).filter(User.user_id == user_id, User.is_deleted == 0).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # If a new file is uploaded, save it
+    if file:
+        full_name = user.full_name
+        user_directory = f"resources/{user_id}_{full_name}"
+        os.makedirs(user_directory, exist_ok=True)
+        file_path = os.path.join(user_directory, file.filename)
+
+        # Save file
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
+
+    # Ensure file_path exists (either from previous upload or current request)
+    if not file_path:
+        raise HTTPException(status_code=400, detail="No file provided and no existing file found.")
+    
+    utc_time = datetime.now(pytz.utc)
+
+    nepal_time = convert_utc_to_nepal_local(utc_time)
+
+    # Process the query using the file
+    ai_response = process_pdf_query(file_path, question)
+
+    # Save query to chat history
+    new_chat_entry = ChatHistory(
+        user_query=question,
+        response=ai_response,
+        user_id=user_id,
+        timestamp=nepal_time,
+        filepath=file_path  
+    )
+    db.add(new_chat_entry)
+    db.commit()
+
+    chat_history = db.query(ChatHistory).filter(
+        ChatHistory.user_id == user_id,
+        ChatHistory.filepath == file_path
+    ).order_by(ChatHistory.id.asc()).all()
+
+    # Convert chat history to list format
+    history_data = [{"question": chat.user_query, "response": chat.response} for chat in chat_history]
+
+    return JSONResponse({
+        "file_path": file_path,
+        "user_query": question,
+        "ai_response": ai_response,
+        "chat_history": history_data
+    })
+
+
+
+
+
+
+
+
+#---------------------------------
+
+
+
+
+
+
+
+
+
 
 
 
