@@ -197,6 +197,17 @@ class Notification(Base):
     task_id = Column(String(50), ForeignKey("task.task_id"), nullable=True)
     
 
+class ChatHistory(Base):
+    __tablename__ = "chat_history"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(255), ForeignKey("user.user_id", ondelete="CASCADE"), nullable=False)
+    user_query = Column(Text, nullable=True)
+    response = Column(Text, nullable=True)
+    timestamp = Column(DateTime,nullable=True )
+    filepath = Column(String(255), nullable=True) 
+
+
 # Create tables in the database
 Base.metadata.create_all(bind=engine)
 
