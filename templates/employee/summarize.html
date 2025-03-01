@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <title>Enhanced AI Notes Generation</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Arial, sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 30px;
+        padding: 30px;
+        width: 100%;
+        max-width: 1000px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 35px;
+        padding: 10px 0;
+        position: relative;
+      }
+
+      .back-btn {
+        background: linear-gradient(135deg, #ff4b4b 0%, #ff0000 100%);
+        border: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 0, 0, 0.2);
+      }
+
+      .back-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 0, 0, 0.3);
+      }
+
+      .title {
+        text-align: center;
+        flex-grow: 1;
+        font-size: 36px;
+        color: #1a1a1a;
+        margin-right: 100px;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-bottom: 35px;
+      }
+
+      .btn {
+        padding: 15px 30px;
+        border-radius: 30px;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        color: white;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn-choose {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      }
+
+      .btn-summarize {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .content-area {
+        margin-bottom: 30px;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 20px;
+      }
+
+      .content-label {
+        font-size: 20px;
+        color: #333;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      .textarea {
+        width: 100%;
+        height: 350px;
+        padding: 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 15px;
+        font-size: 16px;
+        resize: none;
+        transition: all 0.3s ease;
+        background: white;
+        line-height: 1.6;
+        overflow-y: auto;
+      }
+
+      /* Custom Scrollbar */
+      .textarea::-webkit-scrollbar {
+        width: 12px;
+      }
+
+      .textarea::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 6px;
+      }
+
+      .textarea::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border-radius: 6px;
+        border: 3px solid #f1f1f1;
+      }
+
+      .textarea::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 80%);
+      }
+
+      .textarea:focus {
+        outline: none;
+        border-color: #4facfe;
+        box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+      }
+
+      .bottom-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+      }
+
+      .btn-download {
+        background: linear-gradient(135deg, #00c853 0%, #009624 100%);
+      }
+
+      .btn-clear {
+        background: linear-gradient(135deg, #757575 0%, #424242 100%);
+      }
+
+      /* Button Icons */
+      .btn i {
+        font-size: 20px;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .container {
+          padding: 20px;
+        }
+
+        .title {
+          font-size: 28px;
+          margin-right: 0;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+        }
+
+        #file-name {
+          margin-top: 10px;
+          font-size: 14px;
+          color: #4facfe;
+          text-align: center;
+      }
+
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="/emp_details" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1 class="title">AI Document Summarization</h1>
+        </header>
+
+        <div class="action-buttons">
+          <form id="uploadForm" enctype="multipart/form-data">
+            <label for="file-input" class="btn btn-choose">
+                📄 Choose a file
+                <input
+                    type="file"
+                    id="file-input"
+                    hidden
+                    accept=".txt,.doc,.docx,.pdf"
+                    name="file"
+                    required
+                />
+            </label>
+
+        </form>
+
+        <input type="hidden" id="file-path">
+
+            <a
+                href="#"
+                class="btn btn-summarize"
+                id="summarizeBtn"
+                style="pointer-events: none; opacity: 0.6; cursor: not-allowed;"
+            >
+                📝 Summarize Text
+            </a>
+            
+        </div>
+
+        <p>{{ full_name }}</p>
+
+        <div id="file-name"></div>
+
+        <div class="content-area">
+            <div class="content-label">File Contents:</div>
+            <textarea
+                class="textarea"
+                id="content-area"
+                placeholder="Files summarization will appear here...&#10;&#10;• Support for multiple file formats&#10;• Easy to copy and edit&#10;• Download as text file&#10;• Clear with one click"
+                readonly
+            >{{ summary if summary else '' }}</textarea>
+        </div>
+
+        <div class="bottom-buttons">
+            <button class="btn btn-download" id="download-btn">
+                ⬇️ Download Notes
+            </button>
+            <button class="btn btn-clear" id="clear-btn">🗑️ Clear All</button>
+        </div>
+    </div>
+
+    <script>
+      const contentArea = document.getElementById("content-area");
+      const downloadBtn = document.getElementById("download-btn");
+      const clearBtn = document.getElementById("clear-btn");
+      const fileInput = document.getElementById("file-input");
+      const fileName = document.getElementById("file-name");
+      const summarizeBtn = document.getElementById('summarizeBtn');
+
+      fileInput.addEventListener("change", (event) => {
+            if (event.target.files.length > 0) {
+                fileName.textContent = `Selected file: ${event.target.files[0].name}`;
+            } else {
+                fileName.textContent = "";
+            }
+        });
+        
+
+      // File input change handler
+      fileInput.addEventListener('change', async function (event) {
+          const fileInput = event.target;
+          const file = fileInput.files[0];
+
+          if (!file) return;
+
+          const formData = new FormData();
+          formData.append('file', file);
+
+          try {
+              const response = await fetch('/upload-file', {
+                  method: 'POST',
+                  body: formData,
+              });
+
+              if (response.ok) {
+                  const data = await response.json();
+                  const filePath = data.file_path;
+
+                  // Update hidden input with the file path
+                  document.getElementById('file-path').value = filePath;
+
+                  // Enable the summarize button and redirect to summarize page
+                  summarizeBtn.href = `/summarize?file_path=${filePath}`;
+                  summarizeBtn.style.pointerEvents = 'auto';
+                  summarizeBtn.style.opacity = '1';
+                  summarizeBtn.style.cursor = 'pointer';
+              } else {
+                  summarizeBtn.style.pointerEvents = 'none'; // Keep disabled if error
+              }
+          } catch (error) {
+              summarizeBtn.style.pointerEvents = 'none'; // Keep disabled on failure
+          }
+      });
+
+      fileInput.addEventListener('change', () => {
+          if (fileInput.files.length > 0) {
+              // Enable the button
+              summarizeBtn.style.pointerEvents = 'auto';
+              summarizeBtn.style.opacity = '1';
+              summarizeBtn.style.cursor = 'pointer';
+          } else {
+              // Disable the button
+              summarizeBtn.style.pointerEvents = 'none';
+              summarizeBtn.style.opacity = '0.6';
+              summarizeBtn.style.cursor = 'not-allowed';
+          }
+      });
+
+      // Summarize button click handler
+      summarizeBtn.addEventListener('click', async (event) => {
+          event.preventDefault(); // Prevent default link behavior
+
+          const filePath = document.getElementById('file-path').value;
+          if (!filePath) return;
+
+          // Show "Generating summary, please wait..." message
+          contentArea.value = "Generating summary, please wait...";
+
+          try {
+              const response = await fetch(`/summarize?file_path=${filePath}`);
+              if (response.ok) {
+                  const data = await response.json();
+                  contentArea.value = data.summary; // Update textarea with the generated summary
+              } else {
+                  contentArea.value = "Error generating summary. Please try again.";
+              }
+          } catch (error) {
+              contentArea.value = "An error occurred. Please check your connection and try again.";
+          }
+      });
+
+      // Download Handler
+      downloadBtn.addEventListener("click", () => {
+          if (contentArea.value) {
+              const blob = new Blob([contentArea.value], { type: "text/plain" });
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "ai_notes.txt";
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              document.body.removeChild(a);
+
+              // Add success animation
+              downloadBtn.style.transform = "scale(0.95)";
+              setTimeout(() => {
+                  downloadBtn.style.transform = "scale(1)";
+              }, 200);
+          }
+      });
+
+      // Clear Handler
+      clearBtn.addEventListener("click", () => {
+          contentArea.value = "";
+          fileName.textContent = "";
+          contentArea.style.borderColor = "#ff4b4b";
+          setTimeout(() => {
+              contentArea.style.borderColor = "#e0e0e0";
+          }, 1000);
+      });
+  </script>
+    <!-- <script>
+        const contentArea = document.getElementById("content-area");
+        const downloadBtn = document.getElementById("download-btn");
+        const clearBtn = document.getElementById("clear-btn");
+        const fileInput = document.getElementById("file-input");
+        const fileName = document.getElementById("file-name");
+        const summarizeBtn = document.getElementById('summarizeBtn');
+
+        document.getElementById('file-input').addEventListener('change', async function (event) {
+        const fileInput = event.target;
+        const file = fileInput.files[0];
+
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/upload-file', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const filePath = data.file_path;
+
+                // Update hidden input with the file path
+                document.getElementById('file-path').value = filePath;
+
+                // Enable the summarize button and redirect to summarize page
+                summarizeBtn.href = `/summarize?file_path=${filePath}`;
+                summarizeBtn.style.pointerEvents = 'auto';
+                summarizeBtn.style.opacity = '1';
+                summarizeBtn.style.cursor = 'pointer';
+            } else {
+                summarizeBtn.style.pointerEvents = 'none'; // Keep disabled if error
+            }
+        } catch (error) {
+            summarizeBtn.style.pointerEvents = 'none'; // Keep disabled on failure
+        }
+    });
+
+
+        fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            // Enable the button
+            summarizeBtn.style.pointerEvents = 'auto';
+            summarizeBtn.style.opacity = '1';
+            summarizeBtn.style.cursor = 'pointer';
+        } else {
+            // Disable the button
+            summarizeBtn.style.pointerEvents = 'none';
+            summarizeBtn.style.opacity = '0.6';
+            summarizeBtn.style.cursor = 'not-allowed';
+        }
+    });
+
+
+        // File input change handler
+        fileInput.addEventListener("change", (event) => {
+            if (event.target.files.length > 0) {
+                fileName.textContent = `Selected file: ${event.target.files[0].name}`;
+            } else {
+                fileName.textContent = "";
+            }
+        });
+
+        // Download Handler
+        downloadBtn.addEventListener("click", () => {
+            if (contentArea.value) {
+                const blob = new Blob([contentArea.value], { type: "text/plain" });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "ai_notes.txt";
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                // Add success animation
+                downloadBtn.style.transform = "scale(0.95)";
+                setTimeout(() => {
+                    downloadBtn.style.transform = "scale(1)";
+                }, 200);
+            }
+        });
+
+        // Clear Handler
+        clearBtn.addEventListener("click", () => {
+            contentArea.value = "";
+            fileName.textContent = "";
+            contentArea.style.borderColor = "#ff4b4b";
+            setTimeout(() => {
+                contentArea.style.borderColor = "#e0e0e0";
+            }, 1000);
+        });
+    </script> -->
+</body>
+</html>

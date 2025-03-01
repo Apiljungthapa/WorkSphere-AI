@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Registration Form</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #e0e7ff 0%, #e0e7ff 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #333;
+    }
+    
+    .container {
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 600px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Red background in left corner */
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100px;
+      height: 100px;
+      background-color: #e74c3c;
+      border-radius: 0 0 100px 0;
+      z-index: 0;
+    }
+    
+    .form-header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .form-header h1 {
+      color: #333;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .form-header p {
+      color: #666;
+      font-size: 16px;
+      max-width: 400px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    
+    .form-group {
+      margin-bottom: 28px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #333;
+      font-size: 15px;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e1e1e1;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background-color: #f9f9f9;
+    }
+    
+    .form-control:focus {
+      border-color: #4776E6;
+      background-color: #fff;
+      box-shadow: 0 0 0 4px rgba(71, 118, 230, 0.15);
+      outline: none;
+    }
+    
+    .form-control::placeholder {
+      color: #aaa;
+      font-size: 15px;
+    }
+    
+    .submit-btn {
+      background: linear-gradient(90deg, #4776E6 0%, #8E54E9 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      letter-spacing: 0.5px;
+    }
+    
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 20px rgba(71, 118, 230, 0.3);
+    }
+    
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+    
+    .required::after {
+      content: "*";
+      color: #e74c3c;
+      margin-left: 4px;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 20px;
+    }
+    
+    .form-row .form-group {
+      flex: 1;
+    }
+    
+    @media (max-width: 768px) {
+      .form-row {
+        flex-direction: column;
+        gap: 0;
+      }
+      
+      .container {
+        padding: 30px 25px;
+      }
+    }
+    
+    .icon {
+      position: absolute;
+      top: 48px;
+      right: 16px;
+      color: #aaa;
+    }
+    
+    .form-footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 14px;
+      color: #666;
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Back button styles */
+    .back-btn {
+      position: absolute;
+      top: 54px;
+      left: 509px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding:12px 23px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 2;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .back-btn:hover {
+      background-color: #c0392b;
+    }
+    
+    /* Password strength indicator */
+    .password-strength {
+      margin-top: 8px;
+      height: 5px;
+      border-radius: 5px;
+      background-color: #eee;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .password-strength-bar {
+      height: 100%;
+      width: 0;
+      transition: width 0.3s ease;
+    }
+    
+    .password-strength-text {
+      font-size: 12px;
+      margin-top: 5px;
+      color: #666;
+    }
+    
+    .weak {
+      background-color: #e74c3c;
+      width: 33%;
+    }
+    
+    .medium {
+      background-color: #f39c12;
+      width: 66%;
+    }
+    
+    .strong {
+      background-color: #2ecc71;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Back button to /dash -->
+    <a href="/dash" class="back-btn">Back</a>
+    
+    <div class="form-header">
+      <h1>Employee Registration Form</h1>
+      <p>Assign credentials to employee</p>
+    </div>
+    
+    <form id="employee-registration-form">
+        <div class="form-row">
+            <div class="form-group">          
+                <label for="fullname" class="required">Full Name</label>
+                <input type="text" id="fullname" name="fullname" class="form-control" placeholder="Enter full name" required>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="email" class="required">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Enter email address" required>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="phone" class="required">Phone Number</label>
+                <input type="tel" id="phone" name="phone" class="form-control" placeholder="Enter phone number" required>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="position" class="required">Position</label>
+                <input type="text" id="position" name="position" class="form-control" placeholder="Current position" required>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="department">Department Name</label>
+                <input type="text" id="department" name="department" class="form-control" placeholder="Enter department name">
+            </div>
+        </div>
+        
+        <!-- Added password field -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="password" class="required">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Create password" required onkeyup="checkPasswordStrength()">
+                <div class="password-strength">
+                    <div id="password-strength-bar" class="password-strength-bar"></div>
+                </div>
+                <div id="password-strength-text" class="password-strength-text">Password strength</div>
+            </div>
+        </div>
+        
+        
+    
+        <button type="button" onclick="submitForm(event)" class="submit-btn">Register Employee</button>
+
+    
+        <div class="form-footer">
+            All information submitted will be handled according to company policy
+        </div>
+    </form>
+    
+  </div>
+
+  <script>
+    async function submitForm(event) {
+    event.preventDefault();  // This is crucial to stop the default GET request
+
+    const form = document.getElementById('employee-registration-form');
+
+    if (!form.checkValidity()) {
+        alert("Please fill all required fields correctly.");
+        return;
+    }
+
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch('/save-employee', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            alert("Employee registered successfully!");
+
+            const userResponse = confirm("Would you like to register another employee?");
+            if (userResponse) {
+                form.reset();
+            } else {
+                window.location.href = '/dash';
+            }
+        } else {
+            alert("Failed to register employee.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while registering the employee.");
+    }
+}
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #e0e7ff 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1038a2 0%, #056a57 100%);
+            color: white;
+            padding: 30px;
+            transition: all 0.3s ease-in-out;
+        }
+        .sidebar h2 {
+            font-size: 28px;
+            /* color: #056a57; */
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 15px 20px;
+            font-size: 16px;
+            transition: all 0.2s;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .sidebar nav a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        .sidebar nav a i {
+            margin-right: 15px;
+            font-size: 20px;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+        }
+        .search-bar input {
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px 0 0 8px;
+            font-size: 16px;
+            width: 300px;
+        }
+        .search-bar button {
+            padding: 12px 20px;
+            background-color: #298175;
+            color: white;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        .search-bar button:hover {
+            background-color: #1a5c53;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card h3 {
+            font-size: 20px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .stat-card p {
+            font-size: 36px;
+            font-weight: bold;
+            color: #1038a2;
+        }
+        
+        .employee-table {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .employee-table table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .employee-table th, .employee-table td {
+            padding: 20px;
+            text-align: left;
+        }
+        .chat-employee {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #333;
+    font-size: 16px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    position: relative;
+  }
+
+  .chat-employee:hover {
+    background-color: #e0e0e0;
+  }
+
+  .chat-employee i {
+    margin-right: 10px;
+    font-size: 20px;
+    color: #f8fafd;
+  }
+
+  .chat-employee span {
+    flex-grow: 1;
+  }
+
+  .chat-counter {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: #ff6b6b;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+  }
+        .employee-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        .employee-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .employee-table tr:hover {
+            background-color: #e9ecef;
+        }
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .status-active {
+            background-color: #e6f4ea;
+            color: #1e7e34;
+        }
+        .status-leave {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+                padding: 20px 10px;
+            }
+            .sidebar h2 {
+                font-size: 0;
+            }
+            .sidebar h2::first-letter {
+                font-size: 24px;
+            }
+            .sidebar nav a {
+                padding: 15px;
+                justify-content: center;
+            }
+            .sidebar nav a i {
+                margin-right: 0;
+            }
+            .sidebar nav a span {
+                display: none;
+            }
+        }
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                padding: 20px;
+            }
+            .sidebar h2 {
+                font-size: 28px;
+            }
+            .sidebar nav {
+                display: flex;
+                justify-content: space-around;
+            }
+            .sidebar nav a {
+                padding: 10px;
+            }
+            .sidebar nav a i {
+                margin-right: 5px;
+            }
+            .sidebar nav a span {
+                display: inline;
+            }
+            .main-content {
+                padding: 20px;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-bar {
+                margin-top: 20px;
+            }
+            .search-bar input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <h2>WorkSphere </h2>
+        <nav>
+           
+            
+            <a href="{{ url_for('register_employee_page') }}">
+                <i class="fas fa-users"></i>
+                <span>Onboard Employees</span>
+            </a>
+            
+
+
+
+            <a href="{{ url_for('assign_task') }}"><i class="fas fa-tasks"></i></i><span>Tasks</span></a>
+            
+
+                <a href="{{ url_for('render_sentiments_page') }}">
+                    <i class="fas fa-comments"></i>
+                    <span>Evaluations</span>
+                  </a>
+
+                  
+                  <a href="/announcements">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>Announce</span>
+                  </a>
+
+                  <a href="/feed" class="chat-employee">
+                    <i class="fas fa-comments"></i>
+                    <span>Chat with Employees</span>
+                    <div class="chat-counter" id="unread-count">2</div>
+                  </a>
+
+                  <a href="/logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                  </a>
+                  
+
+        </nav>
+        
+    </aside>
+    <main class="main-content">
+        <header class="header">
+            <h1>Manager Dashboard</h1>
+
+
+            <div class="search-bar">
+                <input type="search" placeholder="Search employees...">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+        </header>
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Employees</h3>
+                <p>{{ total_employees }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Departments</h3>
+                <p>{{ total_departments }}</p>
+            </div>
+        </section>
+         <section class="employee-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Position</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td><a href="/tracking.html?user_id={{ employee.user_id }}">{{ employee.name }}</a></td>
+
+                        <td>{{ employee.department }}</td>
+                        <td>{{ employee.position }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+<script>
+   
+   async function fetchUnreadCount() {
+        const response = await fetch('/total_unread', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${document.cookie.access_token}`
+            }
+        });
+        const data = await response.json();
+        const unreadCount = data.total_unread;
+        document.getElementById("unread-count").textContent = unreadCount;
+    }
+
+    // Call fetchUnreadCount initially
+    fetchUnreadCount();
+
+    // WebSocket connection to listen for real-time updates
+    const socket = new WebSocket("ws://127.0.0.1:8000/ws/{{ user_id }}");
+
+    socket.onmessage = function(event) {
+        const message = JSON.parse(event.data);
+        if (message.type === "new_message") {
+            // Fetch unread count again after receiving a new message
+            fetchUnreadCount();
+        }
+    };
+</script>
+</html>
