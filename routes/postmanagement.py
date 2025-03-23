@@ -14,7 +14,6 @@ async def post_edit_page(request: Request):
 async def create_post(request: Request, title: str = Form(...), content: str = Form(...), db: Session = Depends(get_db)):
 
     try:
-
         token = request.cookies.get("access_token")
         if not token:
             raise HTTPException(status_code=401, detail="Not authenticated")
@@ -26,9 +25,8 @@ async def create_post(request: Request, title: str = Form(...), content: str = F
         post_id = f"PST{str(uuid.uuid4().int)[:5]}"
 
         utc_time = datetime.now(pytz.utc)
+
         nepal_time = convert_utc_to_nepal_local(utc_time)
-
-
 
         db_post = Post(
             post_id=post_id,
@@ -220,6 +218,7 @@ async def add_comment(
         response.set_cookie("message", "Comment added successfully!")
         response.set_cookie("message_type", "success")
         return response
+    
 
     except Exception as e:
         print(f"Error: {e}")

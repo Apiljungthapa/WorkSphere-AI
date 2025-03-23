@@ -1,6 +1,8 @@
 from imports import *
 import bcrypt # type: ignore
+from dotenv import load_dotenv
 
+load_dotenv()
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
@@ -46,10 +48,10 @@ async def send_ishDetails_page(
 
     print(f"Sending from HR: {hr_email} to Manager: {manager_email}")
 
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
-    sender_email = hr_email  
-    sender_password = "qiromvjkgibjqipy"  
+    smtp_server = os.getenv("SMTP_SERVER")
+    smtp_port = os.getenv("SMTP_PORT")
+    sender_email = os.getenv("SENDER_EMAIL")
+    sender_password = os.getenv("HR_SENDER_PASSWORD") 
 
     # Create email message
     msg = MIMEMultipart()
@@ -105,6 +107,22 @@ async def check_email(email: str, db: Session = Depends(get_db)):
     else:
         return JSONResponse(content={"exists": False})
 
+@router.get("/hr_check_password")
+async def check_hr_password(password: str, db: Session = Depends(get_db)):
+    try:
+        # Query to check for any user with role 'HR' and matching password
+        user = db.query(User).filter(User.role == 'HR', User.password == password).first()
+
+        if not user:
+            return JSONResponse(content={"correct": False, "message": "Incorrect password or HR not found"}, status_code=401)
+
+        # If user found with HR role and matching password
+        return JSONResponse(content={"correct": True, "message": "Access granted"})
+
+    except Exception as e:
+        return JSONResponse(content={"correct": False, "message": str(e)}, status_code=500)
+
+
 
 @router.post("/login", response_class=HTMLResponse)
 async def user_login(
@@ -119,30 +137,26 @@ async def user_login(
         User.is_deleted == 0
     ).first()
 
-    print(user)
-
-
-    # Check if user exists and is not deleted
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found or account deleted")
+        return JSONResponse(status_code=404, content={"detail": "User not found or account deleted"})
     
     if user.role == "manager":
 
         if not Hasher.verify_password(password, user.password):
-            raise HTTPException(status_code=401, detail="Incorrect password")
+            return JSONResponse(status_code=401, content={"detail": "Incorrect password"})
     
     elif user.role == "employee":
 
         if not Hasher.verify_password(password, user.password):
-            raise HTTPException(status_code=401, detail="Incorrect password employee")
+            return JSONResponse(status_code=401, content={"detail": "Incorrect password employee"})
     
     else:
-        raise HTTPException(status_code=403, detail="Unauthorized role")
+        return JSONResponse(status_code=403, content={"detail": "Unauthorized role"})
     
 
     # Verify OTP
     if user.otp_code != otp_code:
-        raise HTTPException(status_code=401, detail="Incorrect OTP")
+        return JSONResponse(status_code=401, content={"detail": "Incorrect OTP"})
 
     access_token = create_access_token(
         data={
@@ -154,14 +168,18 @@ async def user_login(
 
     print("Access Token:", access_token)
 
-    if user.role == "manager":
-        response = RedirectResponse(url="/dash", status_code=303)
+    # if user.role == "manager":
+    #     response = RedirectResponse(url="/dash", status_code=303)
 
-    elif user.role == "employee":
-        response = RedirectResponse(url="/dashboard", status_code=303)
+    # elif user.role == "employee":
+    #     response = RedirectResponse(url="/dashboard", status_code=303)
 
-    else:
-        raise HTTPException(status_code=403, detail="Unauthorized role")
+    # else:
+    #     raise HTTPException(status_code=403, detail="Unauthorized role")
+    
+    redirect_url = "/dash" if user.role == "manager" else "/dashboard"
+    response = JSONResponse(status_code=200, content={"redirect_url": redirect_url, "message": "Login successful"})
+
 
     response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True, samesite="Lax", secure=False)
 

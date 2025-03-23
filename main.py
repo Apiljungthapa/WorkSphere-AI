@@ -5,6 +5,7 @@ os.environ["GRPC_TRACE"] = ""
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
+print("yaha aauxa ")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(AuthMiddleware)

@@ -34,6 +34,8 @@ import pytz
 from middlewares.auth_middleware import AuthMiddleware 
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv # type: ignore
+import asyncio
 
 import logging
 logging.getLogger("grpc").setLevel(logging.ERROR)

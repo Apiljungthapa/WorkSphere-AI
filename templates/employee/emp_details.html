@@ -11,398 +11,9 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', path='/emp_details.css') }}">
 
-    <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #e0e7ff 0%, #e0e7ff 100%);
-        }
-
-        .card-gradient {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(249, 250, 251, 0.9) 100%);
-        }
-
-        .header-gradient {
-            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
-        }
-
-        .post-gradient {
-            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-        }
-
-        .btn-gradient {
-            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
-            transition: all 0.3s ease;
-        }
-
-
-
-
-        .post-comments {
-            max-width: 1180px;
-            margin: 2rem auto;
-            padding: 1rem;
-        }
-
-        .post-comments__title {
-            color: #4f46e5;
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-
-        .post-comments__list {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        /* Individual comment styles */
-        .comment {
-            display: flex;
-            background-color: #ffffff;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s ease;
-        }
-
-        .comment:hover {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #4f46e5;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            margin-right: 1rem;
-            flex-shrink: 0;
-        }
-
-        .comment__content {
-            flex-grow: 1;
-        }
-
-        .comment__text {
-            margin-bottom: 0.5rem;
-        }
-
-        .comment__meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.875rem;
-            color: #6b7280;
-        }
-
-        .comment__author {
-            font-weight: 600;
-            color: #4f46e5;
-        }
-
-        .comment__date {
-            font-style: italic;
-        }
-
-        /* Comment form styles */
-        .comment-form {
-            margin-top: 2rem;
-        }
-
-        .comment-form__input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .comment-form__input:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-
-        .comment-form__submit {
-            display: inline-block;
-            margin-top: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            background-color: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 0.375rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .comment-form__submit:hover {
-            background-color: #4338ca;
-        }
-
-/* Buttons (Edit, Delete, Like) */
-.btn-outline {
-    background: transparent;
-    border: 2px solid #4c51bf;
-    color: #4c51bf;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    display: flex;
-    align-items: center;
-}
-
-.btn-outline:hover {
-    background-color: #4c51bf;
-    color: white;
-}
-
-.btn-gradient {
-    background: linear-gradient(90deg, #4c51bf 0%, #667eea 100%);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-}
-
-/* Comments section */
-.comment-item {
-    background-color: #edf2f7;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-}
-
-.comment-item p {
-    font-size: 0.875rem;
-    color: #2d3748;
-}
-
-.comment-item span {
-    font-size: 0.75rem;
-    color: #718096;
-}
-.post-container {
-  background-color: #ffffff;
-}
-
-.post-title {
-  color: #4f46e5;
-}
-
-.post-content {
-  color: #374151;
-}
-
-.btn-outline {
-  border: 1px solid #d1d5db;
-  color: #4b5563;
-  transition: all 0.2s ease-in-out;
-}
-
-.btn-outline:hover {
-  background-color: #143576;
-}
-
-.fb-like-button {
-  color: #4b5563;
-  transition: all 0.2s ease-in-out;
-}
-
-.post-date {
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  color: #333;
-}
-
-.label {
-  font-weight: bold;
-  margin-right: 5px;
-  color: #555;
-}
-
-.date {
-  font-style: italic;
-  color: #777;
-}
-
-
-.btn-gradient {
-  background-image: linear-gradient(to right, #4f46e5, #7c3aed);
-  transition: all 0.2s ease-in-out;
-}
-
-.btn-gradient:hover {
-  opacity: 0.9;
-}
-
-.comment-item {
-  background-color: #f3f4f6;
-}
-
-.chat-link {
-    display: block;
-    text-decoration: none;
-    width: 100%;
-    max-width: 300px;
-  }
-
-  .chat-card {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transition: box-shadow 0.3s ease;
-    padding: 1rem 1.5rem;
-    position: relative;
-  }
-
-  .chat-card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  }
-
-  .counter {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    background-color: #4F46E5;
-    color: white;
-    font-size: 0.75rem;
-    font-weight: bold;
-    padding: 0.25rem 0.5rem;
-    border-radius: 9999px;
-    min-width: 1.5rem;
-    text-align: center;
-  }
-
-  .chat-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #4F46E5;
-    display: flex;
-    align-items: center;
-  }
-
-  .chat-icon {
-    height: 1.25rem;
-    width: 1.25rem;
-    margin-right: 0.5rem;
-  }
-
-  .chat-description {
-    font-size: 0.875rem;
-    color: #4B5563;
-    margin-top: 0.5rem;
-  }
-
-  @media (min-width: 768px) {
-    .chat-card {
-      padding: 1.5rem;
-    }
-
-    .chat-title {
-      font-size: 1.25rem;
-    }
-  }
-
-/* Add Comment input field */
-input[type="text"] {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #cbd5e0;
-    border-radius: 0.375rem;
-    margin-bottom: 0.5rem;
-}
-.fb-like-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    color: #65676B;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: color 0.2s ease;
-  }
-
-  .avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: #3498db;
-            color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 18px;
-            font-weight: bold;
-            margin-right: 15px;
-        }
-  
-  .like-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 6px;
-    stroke: currentColor;
-  }
-
-  .like-text {
-    line-height: 1;
-  }
-
-.space-y-6 > *:not(:last-child) {
-        margin-bottom: 1.5rem;
-}
-
-    .btn-gradient:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .btn-outline {
-            border: 2px solid #0f0909;
-            color: #0f0e0e;
-            background: transparent;
-            transition: all 0.3s ease;
-        }
-
-        .custom-alert {
-            background-color: #ff9b00;
-            color: #1d1601; 
-            border-color: #f7d24e; 
-            padding: 20px; 
-            font-size: 18px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
-            position: relative; 
-        }
-
-        .custom-alert .close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 25px; 
-            color: #1d1601; 
-            opacity: 0.7;
-        }
-
-        .custom-alert .close:hover {
-            opacity: 1; 
-        }
-
-        .custom-alert strong {
-            font-weight: bold; 
-        }
-
-        .custom-alert p {
-            margin-top: 10px; 
-    }
-    </style>
+   
 </head>
 
 <body class="gradient-bg min-h-screen p-4 md:p-8">
@@ -589,27 +200,31 @@ input[type="text"] {
                     </div>
                 
                     <!-- Post actions (Edit, Delete, Like) -->
+
                     <div class="post-actions flex flex-col sm:flex-row justify-between items-center mb-4">
                         <div class="post-actions__edit-delete flex space-x-2 mb-2 sm:mb-0">
-                            <a href="{{ url_for('post_edit_page', post_id=post.post_id) }}" class="post-actions__edit">
-                                <button class="btn-outline btn-outline--edit px-3 py-1 rounded-md flex items-center hover:bg-indigo-100 transition duration-300">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                    Edit
-                                </button>
-                            </a>
-                
-                            <a href="/post/delete/{{ post.post_id }}" class="post-actions__delete">
-                                <button class="btn-outline btn-outline--delete px-3 py-1 rounded-md flex items-center hover:bg-red-100 transition duration-300">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    Delete
-                                </button>
-                            </a>
+                            <!-- Show Edit and Delete buttons only for the author -->
+                            {% if user_id == post.user_id %}
+                                <a href="{{ url_for('post_edit_page', post_id=post.post_id) }}" class="post-actions__edit">
+                                    <button class="btn-outline btn-outline--edit px-3 py-1 rounded-md flex items-center hover:bg-indigo-100 transition duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        Edit
+                                    </button>
+                                </a>
+                    
+                                <a href="/post/delete/{{ post.post_id }}" class="post-actions__delete">
+                                    <button class="btn-outline btn-outline--delete px-3 py-1 rounded-md flex items-center hover:bg-red-100 transition duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Delete
+                                    </button>
+                                </a>
+                            {% endif %}
                         </div>
-                
+                    
                         <div class="post-actions__stats flex items-center space-x-4">
                             <span class="post-actions__comments text-sm text-gray-500">{{ post.comments|length }} comments</span>
                             <span id="like-count-{{ post.post_id }}" class="post-actions__likes text-sm text-gray-500">{{ post.likes }} likes</span>
@@ -635,6 +250,7 @@ input[type="text"] {
                             </button>
                         </div>
                     </div>
+                    
 
                     <div class="post-comments">
                         <h4 class="post-comments__title">Comments</h4>

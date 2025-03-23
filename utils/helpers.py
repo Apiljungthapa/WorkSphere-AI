@@ -100,6 +100,7 @@ def fetch_posts_for_user(user_id: str, db: Session) -> list:
 
         post.full_name = full_name
         post.initials = initials
+        post.user_id = post.user_id
 
     return posts
 
@@ -153,7 +154,6 @@ class ManagerHRManager:
     @staticmethod
     def get_password_hash(password):
         return pwd_context.hash(password)
-
 
     @staticmethod
     def create_hr_user(db: Session) -> User:

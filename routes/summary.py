@@ -51,7 +51,7 @@ async def summarize_text(request: Request, file_path: str = Query(...)):
         raise HTTPException(status_code=404, detail="File not found")
 
     # Summarizer Integration
-    summary = summarizer.summarize_document(str(file_path))
+    summary = await summarizer.summarize_document(str(file_path))
 
     print(summary)
 

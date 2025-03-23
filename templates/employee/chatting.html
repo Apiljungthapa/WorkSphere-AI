@@ -1,349 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Instagram-like Chat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .chat-container {
-            max-width: 600px;
-            width: 100%;
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            height: 90vh;
-        }
-        .chat-header {
-            background: #f3f4f6;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .chat-header img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 15px;
-            object-fit: cover;
-        }
-        .chat-header-info h2 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        .chat-header-info p {
-            font-size: 14px;
-            color: #666;
-        }
-        .messages {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        .avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: #3498db;
-            color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 18px;
-            font-weight: bold;
-            margin-right: 15px;
-        }
-        .message {
-            max-width: 70%;
-            margin-bottom: 20px;
-            padding: 10px 15px;
-            border-radius: 18px;
-            line-height: 1.4;
-            font-size: 14px;
-            clear: both;
-        }
-        .message-status {
-        font-size: 0.8em;
-        color: #666;
-        margin-top: 5px;
-        }
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='/chatting.css') }}"
+    />
+  </head>
 
-        .message.sent {
-            float: right;
-            background-color: #3b82f6;
-            color: white;
-        }
-        .message.received {
-            float: left;
-            background-color: #f3f4f6;
-        }
-        .message-time {
-            font-size: 12px;
-            color: #9ca3af;
-            margin-top: 5px;
-            clear: both;
-        }
-        .chat-input {
-            padding: 15px;
-            background: #f3f4f6;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-        }
-        .chat-input input {
-            flex-grow: 1;
-            border: none;
-            outline: none;
-            background: white;
-            border-radius: 20px;
-            padding: 10px 15px;
-            font-size: 14px;
-        }
-        .chat-input button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 20px;
-            margin-left: 10px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .chat-input button:hover {
-            background: #2563eb;
-        }
-        .back-button {
-            background: none;
-            border: none;
-            font-size: 24px;
-            margin-right: 10px;
-            cursor: pointer;
-            text-decoration: none;
-            color: #333;
-        }
-    </style>
-</head>
-
-<body>
+  <body>
     <div class="chat-container">
-        <div class="chat-header">
-            <a href="{{ url_for('get_feed') }}" class="back-button">←</a>
-            <div class="avatar">{{ emp2_initials }}</div>
-            <div class="chat-header-info">
-                <h2>{{ emp2_name }}</h2>
-               
-               
-            </div>
+      <div class="chat-header">
+        <a href="{{ url_for('get_feed') }}" class="back-button">←</a>
+        <div class="avatar">{{ emp2_initials }}</div>
+        <div class="chat-header-info">
+          <h2>{{ emp2_name }}</h2>
         </div>
-        <div class="messages" id="messages">
-            
-           
-        </div>
-        <div class="chat-input">
-            <input id="messageText" type="text" placeholder="Type a message..." />
-            <button onclick="sendMessage()">Send</button>
-        </div>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="chat-input">
+        <input id="messageText" type="text" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
     </div>
-</body>
-<script>
+  </body>
+  <script>
+    const emp1_id = "{{ emp1_id }}";
 
-const emp1_id = "{{ emp1_id }}";
-    
     const emp2_id = "{{ emp2_id }}";
     const chatroom_id = "{{ chatroom_id }}";
 
     console.log("emp1_id:", emp1_id);
     console.log("emp2_id:", emp2_id);
     console.log("chatroom_id:", chatroom_id);
-    
+
     // Initialize WebSocket connection
-    const ws = new WebSocket(`ws://localhost:8000/ws/${emp1_id}`);
+    // const ws = new WebSocket(`ws://localhost:8000/ws/${emp1_id}`);
+    const ws = new WebSocket(
+      `wss://lemming-noted-cub.ngrok-free.app/ws/${emp1_id}`
+    );
 
     ws.onopen = function () {
-    console.log("WebSocket connection established.");
+      console.log("WebSocket connection established.");
 
-    // Load previous chat history when WebSocket is connected
-    loadChatHistory(chatroom_id); // Call the chat history API here
-};
+      // Load previous chat history when WebSocket is connected
+      loadChatHistory(chatroom_id); // Call the chat history API here
+    };
     ws.onerror = function (error) {
-        console.error("WebSocket encountered an error:", error);
+      console.error("WebSocket encountered an error:", error);
     };
 
     ws.onclose = function () {
-        console.warn("WebSocket connection closed.");
+      console.warn("WebSocket connection closed.");
     };
 
     // Handle incoming WebSocket messages
-  // Handle incoming WebSocket messages
-ws.onmessage = function (event) {
-    try {
+    // Handle incoming WebSocket messages
+    ws.onmessage = function (event) {
+      try {
         const message = JSON.parse(event.data);
-        
+
         // Only handle chat_message type for message display
         if (message.type === "chat_message") {
-            const messages = document.getElementById("messages");
-            const messageDiv = document.createElement("div");
-            messageDiv.classList.add("message", message.sender_id === emp1_id ? "sent" : "received");
+          const messages = document.getElementById("messages");
+          const messageDiv = document.createElement("div");
+          messageDiv.classList.add(
+            "message",
+            message.sender_id === emp1_id ? "sent" : "received"
+          );
 
-            const messageContent = document.createElement("div");
-            messageContent.classList.add("message-content");
-            messageContent.textContent = message.content;
+          const messageContent = document.createElement("div");
+          messageContent.classList.add("message-content");
+          messageContent.textContent = message.content;
 
-            const messageStatus = document.createElement("div");
+          const messageStatus = document.createElement("div");
 
-            const messageTime = document.createElement("div");
-            messageTime.classList.add("message-time");
-            
-            // Parse Nepal time correctly
-            const nepalTime = new Date(message.timestamp);
-            messageTime.textContent = nepalTime.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            });
+          const messageTime = document.createElement("div");
+          messageTime.classList.add("message-time");
 
-            messageDiv.appendChild(messageContent);
-            messageDiv.appendChild(messageStatus);
-            messageDiv.appendChild(messageTime);
-            messages.appendChild(messageDiv);
-            messages.scrollTop = messages.scrollHeight;
+          // Parse Nepal time correctly
+          const nepalTime = new Date(message.timestamp);
+          messageTime.textContent = nepalTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+
+          messageDiv.appendChild(messageContent);
+          messageDiv.appendChild(messageStatus);
+          messageDiv.appendChild(messageTime);
+          messages.appendChild(messageDiv);
+          messages.scrollTop = messages.scrollHeight;
         }
         // Add handling for other message types if needed
         else if (message.type === "new_message") {
-            // Handle notifications separately
-            console.log("New message notification:", message);
-            // Update unread count here if needed
+          // Handle notifications separately
+          console.log("New message notification:", message);
+          // Update unread count here if needed
         }
-    } catch (error) {
+      } catch (error) {
         console.error("Error handling WebSocket message:", error);
-    }
-};
-
-
+      }
+    };
 
     // Load chat history from the server
     async function loadChatHistory(chat_id) {
-        try {
-            console.log("Fetching chat history for chat_id:", chat_id);
-            const response = await fetch(`/chats/${chat_id}`);
+      try {
+        console.log("Fetching chat history for chat_id:", chat_id);
+        const response = await fetch(`/chats/${chat_id}`);
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch chat history: ${response.statusText}`);
-            }
-
-            const chatHistory = await response.json();
-            console.log("Chat history loaded:", chatHistory);
-
-            const messages = document.getElementById("messages");
-            messages.innerHTML = ""; // Clear existing messages
-
-            chatHistory.forEach((msg) => {
-                const messageDiv = document.createElement("div");
-                messageDiv.classList.add("message", msg.sender_id === emp1_id ? "sent" : "received");
-
-                const messageContent = document.createElement("div");
-                messageContent.classList.add("message-content");
-                messageContent.textContent = msg.content;
-
-                const messageTime = document.createElement("div");
-                messageTime.classList.add("message-time");
-                messageTime.textContent = new Date(msg.timestamp).toLocaleTimeString();
-
-                messageDiv.appendChild(messageContent);
-                messageDiv.appendChild(messageTime);
-                messages.appendChild(messageDiv);
-            });
-
-            messages.scrollTop = messages.scrollHeight; // Auto-scroll to the bottom
-        } catch (error) {
-            console.error("Error loading chat history:", error);
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch chat history: ${response.statusText}`
+          );
         }
+
+        const chatHistory = await response.json();
+        console.log("Chat history loaded:", chatHistory);
+
+        const messages = document.getElementById("messages");
+        messages.innerHTML = ""; // Clear existing messages
+
+        chatHistory.forEach((msg) => {
+          const messageDiv = document.createElement("div");
+          messageDiv.classList.add(
+            "message",
+            msg.sender_id === emp1_id ? "sent" : "received"
+          );
+
+          const messageContent = document.createElement("div");
+          messageContent.classList.add("message-content");
+          messageContent.textContent = msg.content;
+
+          const messageTime = document.createElement("div");
+          messageTime.classList.add("message-time");
+          messageTime.textContent = new Date(
+            msg.timestamp
+          ).toLocaleTimeString();
+
+          messageDiv.appendChild(messageContent);
+          messageDiv.appendChild(messageTime);
+          messages.appendChild(messageDiv);
+        });
+
+        messages.scrollTop = messages.scrollHeight; // Auto-scroll to the bottom
+      } catch (error) {
+        console.error("Error loading chat history:", error);
+      }
     }
 
-   
     // Send a message to the server
     function sendMessage() {
-        const input = document.getElementById("messageText");
-        const message = input.value;
+      const input = document.getElementById("messageText");
+      const message = input.value;
 
-        if (!message) {
-            console.warn("No message entered.");
-            return;
-        }
+      if (!message) {
+        console.warn("No message entered.");
+        return;
+      }
 
-        const payload = {
-            chat_id: chatroom_id, // Ensure this is defined in your script or passed in
-            sender_id: emp1_id,
-            receiver_id: emp2_id,
-            content: message,
-        };
+      const payload = {
+        chat_id: chatroom_id, // Ensure this is defined in your script or passed in
+        sender_id: emp1_id,
+        receiver_id: emp2_id,
+        content: message,
+      };
 
-        console.log("Sending message payload:", payload);
+      console.log("Sending message payload:", payload);
 
-        try {
-            ws.send(JSON.stringify(payload)); // Send message via WebSocket
-            console.log("Message sent successfully.");
+      try {
+        ws.send(JSON.stringify(payload)); // Send message via WebSocket
+        console.log("Message sent successfully.");
 
-            // Update the UI immediately
-            const messages = document.getElementById("messages");
-            const messageDiv = document.createElement("div");
-            messageDiv.classList.add("message", "sent");
+        // Update the UI immediately
+        const messages = document.getElementById("messages");
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", "sent");
 
-            const messageContent = document.createElement("div");
-            messageContent.classList.add("message-content");
-            messageContent.textContent = message;
+        const messageContent = document.createElement("div");
+        messageContent.classList.add("message-content");
+        messageContent.textContent = message;
 
-            const messageTime = document.createElement("div");
-            messageTime.classList.add("message-time");
-            messageTime.textContent = new Date().toLocaleTimeString();
+        const messageTime = document.createElement("div");
+        messageTime.classList.add("message-time");
+        messageTime.textContent = new Date().toLocaleTimeString();
 
-            messageDiv.appendChild(messageContent);
-            messageDiv.appendChild(messageTime);
-            messages.appendChild(messageDiv);
-            messages.scrollTop = messages.scrollHeight; // Auto-scroll to the bottom
+        messageDiv.appendChild(messageContent);
+        messageDiv.appendChild(messageTime);
+        messages.appendChild(messageDiv);
+        messages.scrollTop = messages.scrollHeight; // Auto-scroll to the bottom
 
-            input.value = ""; // Clear the input field
-        } catch (error) {
-            console.error("Error sending message:", error);
-        }
+        input.value = ""; // Clear the input field
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
     }
 
     function getRandomColor() {
-            const hue = Math.floor(Math.random() * 360);
-            return `hsl(${hue}, 70%, 50%)`;
-        }
+      const hue = Math.floor(Math.random() * 360);
+      return `hsl(${hue}, 70%, 50%)`;
+    }
 
-        function setAvatarColors() {
-            const avatars = document.querySelectorAll('.avatar');
-            avatars.forEach(avatar => {
-                avatar.style.backgroundColor = getRandomColor();
-            });
-        }
+    function setAvatarColors() {
+      const avatars = document.querySelectorAll(".avatar");
+      avatars.forEach((avatar) => {
+        avatar.style.backgroundColor = getRandomColor();
+      });
+    }
 
-        // Set initial colors
-        setAvatarColors();
+    // Set initial colors
+    setAvatarColors();
 
-        // Optionally, set new colors every time the page is loaded
-        window.addEventListener('load', setAvatarColors);
-
-</script>
-
-
+    // Optionally, set new colors every time the page is loaded
+    window.addEventListener("load", setAvatarColors);
+  </script>
 </html>

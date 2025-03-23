@@ -1,9 +1,11 @@
 from imports import *
 import bcrypt # type: ignore
+from dotenv import load_dotenv
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
+load_dotenv()
 
 
 @router.get("/manager/{page_name}", response_class=HTMLResponse)
@@ -64,7 +66,7 @@ async def save_employee_details(
         smtp_server = "smtp.gmail.com"
         smtp_port = 587
         sender_email = manager_email  
-        sender_password = "frxhbvyxwodkyqtb"  
+        sender_password = os.getenv("MANAGER_SENDER_PASSWORD") 
 
         # Create email content
         msg = MIMEMultipart()

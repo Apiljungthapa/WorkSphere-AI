@@ -54,10 +54,10 @@ class DocumentSummarizer:
 
     # Retry mechanism for API rate limits and temporary errors
     @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(5))
-    def invoke_summary_chain(self, chunks):
+    async def invoke_summary_chain(self, chunks):
         return self.summary_chain.invoke(chunks)
 
-    def load_file_content(self, file_path):
+    async def load_file_content(self, file_path):
         ext = os.path.splitext(file_path)[1].lower()
         if ext == '.pdf':
             loader = PyPDFLoader(file_path)
@@ -78,7 +78,7 @@ class DocumentSummarizer:
         chunks = splitter.create_documents([text])
         return chunks
 
-    def summarize_document(self, file_path):
+    async def summarize_document(self, file_path):
         try:
             # Load file content
             content = self.load_file_content(file_path)

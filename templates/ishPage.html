@@ -4,163 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ISH - Send Details to Manager</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    }
-    
-    body {
-      background-color: white;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      color: #333;
-    }
-    
-    .container {
-      background-color: white;
-      border-radius: 16px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-      width: 100%;
-      max-width: 600px;
-      padding: 40px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 8px;
-    }
-    
-    .form-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    
-    .form-header h1 {
-      color: #333;
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-    
-    .form-header p {
-      color: #666;
-      font-size: 16px;
-      max-width: 400px;
-      margin: 0 auto;
-      line-height: 1.5;
-    }
-    
-    .form-group {
-      margin-bottom: 28px;
-      position: relative;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #333;
-      font-size: 15px;
-    }
-    
-    .form-control {
-      width: 100%;
-      padding: 14px 16px;
-      border: 2px solid #e1e1e1;
-      border-radius: 10px;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      background-color: #f9f9f9;
-    }
-    
-    .form-control:focus {
-      border-color: #4776E6;
-      background-color: #fff;
-      box-shadow: 0 0 0 4px rgba(71, 118, 230, 0.15);
-      outline: none;
-    }
-    
-    .form-control::placeholder {
-      color: #aaa;
-      font-size: 15px;
-    }
-    
-    .submit-btn {
-      background: linear-gradient(90deg, #4776E6 0%, #8E54E9 100%);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 16px 20px;
-      font-size: 16px;
-      font-weight: 600;
-      width: 100%;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 10px;
-      letter-spacing: 0.5px;
-    }
-    
-    .submit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 7px 20px rgba(71, 118, 230, 0.3);
-    }
-    
-    .submit-btn:active {
-      transform: translateY(0);
-    }
-    
-    .required::after {
-      content: "*";
-      color: #e74c3c;
-      margin-left: 4px;
-    }
-    
-    .form-row {
-      display: flex;
-      gap: 20px;
-    }
-    
-    .form-row .form-group {
-      flex: 1;
-    }
-    
-    @media (max-width: 768px) {
-      .form-row {
-        flex-direction: column;
-        gap: 0;
-      }
-      
-      .container {
-        padding: 30px 25px;
-      }
-    }
-    
-    .icon {
-      position: absolute;
-      top: 48px;
-      right: 16px;
-      color: #aaa;
-    }
-    
-    .form-footer {
-      text-align: center;
-      margin-top: 30px;
-      font-size: 14px;
-      color: #666;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', path='/ishPage.css') }}">
 </head>
 <body>
   <div class="container">
@@ -168,8 +12,11 @@
       <h1>ISH Details Form</h1>
       <p>Complete this form to send your details to the department manager</p>
     </div>
+
+    <div class="error-message" id="error-message"></div>
     
     <form id="ish-form">
+        <div class="error-message" id="error-message"></div>
         <div class="form-row">
             <div class="form-group">
                 <label for="fullname" class="required">Full Name</label>
@@ -216,13 +63,46 @@
 </body>
 <script>
     async function submitForm() {
-        const form = document.getElementById('ish-form');
-        const formData = new FormData(form);
-    
+    const form = document.getElementById('ish-form');
+    const errorMessageDiv = document.getElementById('error-message');
+
+    // Get form values
+    const fullname = document.getElementById('fullname').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const position = document.getElementById('position').value.trim();
+
+    // Email validation regex
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    // Phone number validation (digits only, 7-15 characters)
+    const phonePattern = /^[0-9]{7,15}$/;
+
+    // Validation checks
+    if (!fullname || !email || !phone || !position) {
+        showError("All required fields must be filled.");
+        return;
+    }
+    if (!emailPattern.test(email)) {
+        showError("Invalid email format.");
+        return;
+    }
+    if (!phonePattern.test(phone)) {
+        showError("Phone number must contain only digits and be between 7-15 characters long.");
+        return;
+    }
+
+    // Hide previous errors if validation passes
+    errorMessageDiv.style.display = "none";
+
+    // Prepare form data
+    const formData = new FormData(form);
+
+    try {
         const response = await fetch('/ishDetails', {
             method: 'POST',
             body: formData
         });
+
         if (response.ok) {
             alert("Form sent successfully!");
 
@@ -230,15 +110,27 @@
             const userResponse = confirm("Would you like to send more details?");
             
             if (userResponse) {
-                // If 'Yes', redirect to /ishPage
                 window.location.href = '/ishPage';
+                
             } else {
-                // If 'No', redirect to the default route
                 window.location.href = '/';
             }
         } else {
-            alert("Failed to send form.");
+            const result = await response.json();
+            showError(result.message || "Failed to send form. Please try again.");
         }
+    } catch (error) {
+        showError("Network error. Please check your connection and try again.");
+        console.error("Error:", error);
     }
+}
+
+// Function to show error messages in the error message div
+function showError(message) {
+    const errorMessageDiv = document.getElementById('error-message');
+    errorMessageDiv.textContent = message;
+    errorMessageDiv.style.display = "block";
+}
+
     </script>
 </html>

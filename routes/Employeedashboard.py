@@ -114,7 +114,6 @@ async def employee_details_page(request: Request, db: Session = Depends(get_db))
     # Clear the message cookies after rendering
     response.delete_cookie("message")
     response.delete_cookie("message_type")
-
     return response
 
 
