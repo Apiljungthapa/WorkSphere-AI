@@ -35,6 +35,15 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         User.position.ilike('%head%')  
     ).first()  
 
+    pending_task_count = (
+        db.query(Task)
+        .filter(Task.assigned_to_id == user_id, Task.status == "Pending")
+        .count()
+    )
+
+    total_announcement_count = db.query(Announcement).count()
+
+
     department_head_name = department_head.full_name if department_head else "N/A"
 
     user = db.query(User).filter(User.user_id == user_id).first()
@@ -58,9 +67,15 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             "department_name": department_name,
             "department_head": department_head_name,
             "department_members_count": department_members_count,
+            "pending_task_count": pending_task_count,
+            "pending_announcement_count": total_announcement_count,
             "show_red_dot": show_red_dot
         },
     )
+
+
+
+
 
 
 @router.get("/emp_details", response_class=HTMLResponse)
@@ -249,3 +264,25 @@ async def update_profile(
             "message_type": "success",
         },
     )
+
+
+@router.get("/get_policy")
+def get_policy(db: Session = Depends(get_db)):
+    print("________________________________________________________ ayo la policy ____")
+
+    try:
+        policy = db.query(CompanyPolicy).first()
+        
+        if policy:
+            return JSONResponse(content={
+                "general_guidelines": policy.general_guidelines,
+                "attendance_policy": policy.attendance_policy,
+                "leave_policy": policy.leave_policy,
+                "working_hours": policy.working_hours
+            })
+        else:
+            raise HTTPException(status_code=404, detail="Policy data not found.")
+    except Exception as e:
+
+        print(f"Error fetching policy data: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")

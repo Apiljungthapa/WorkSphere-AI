@@ -13,7 +13,7 @@ class DocumentSummarizer:
     def __init__(self, model="gemini-pro", api_key="AIzaSyDiR9XUm72YuSDrfZSdxdVkQLOSHGI7Xzg"):
         # Initialize LLM and summarizer chain
         self.llm =  ChatGroq(
-    model="mixtral-8x7b-32768",
+    model="llama-3.1-8b-instant",
     api_key="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")
         
         self.summary_chain = self._setup_summary_chain()
@@ -55,7 +55,8 @@ class DocumentSummarizer:
     # Retry mechanism for API rate limits and temporary errors
     @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(5))
     async def invoke_summary_chain(self, chunks):
-        return self.summary_chain.invoke(chunks)
+         result = await self.summary_chain.ainvoke(chunks)
+         return result
 
     async def load_file_content(self, file_path):
         ext = os.path.splitext(file_path)[1].lower()
@@ -81,13 +82,13 @@ class DocumentSummarizer:
     async def summarize_document(self, file_path):
         try:
             # Load file content
-            content = self.load_file_content(file_path)
+            content = await self.load_file_content(file_path)
 
             # Split content into chunks
             chunks = self.chunk_content(content)
 
             # Summarize using the summary chain
-            summary_result = self.invoke_summary_chain(chunks)
+            summary_result = await self.invoke_summary_chain(chunks)
 
             # Extract and return the final summary
             return summary_result['output_text']
@@ -97,7 +98,8 @@ class DocumentSummarizer:
 
 # Main execution
 if __name__ == "__main__":
-    file_path = "/content/Nepal.pdf"
-    summarizer = DocumentSummarizer()
-    final_summary = summarizer.summarize_document(file_path)
-    print(final_summary)
+    async def main():
+        file_path = "/content/Nepal.pdf"
+        summarizer = DocumentSummarizer()
+        final_summary = await summarizer.summarize_document(file_path)
+        print(final_summary)

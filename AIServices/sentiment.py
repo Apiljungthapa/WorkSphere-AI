@@ -4,7 +4,10 @@ from transformers import DistilBertTokenizer, DistilBertForSequenceClassificatio
 
 # Define model directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_DIR = os.path.join(BASE_DIR, "sentimentmodel", "checkpoint-1500")
+MODEL_DIR = os.path.join(BASE_DIR, "sentimentmodel", "checkpoint-1500")  
+
+print(BASE_DIR)
+print(MODEL_DIR)
 
 class SentimentAnalyzer:
     def __init__(self,MODEL_DIR):
@@ -55,7 +58,7 @@ class SentimentAnalyzer:
             return {
                 "text": text,
                 "predicted_label": sentiment_label,
-                "confidence_score": round(confidence_score * 100, 2)  # Convert to percentage
+                "confidence_score": round(confidence_score * 100, 2)
             }
 
         except Exception as e:

@@ -14,7 +14,7 @@ class RAGSystem:
         self.pdf_path = pdf_path
         self.embeddings = HuggingFaceEmbeddings(model_name=model_name)
         self.llm = ChatGroq(
-            model="mixtral-8x7b-32768",
+            model="llama-3.1-8b-instant",
             api_key="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"
         )
         self.vector_store = None

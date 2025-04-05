@@ -86,6 +86,7 @@ async def send_ishDetails_page(
         server.login(sender_email, sender_password)
         server.send_message(msg)
         print(f"Email sent successfully from HR ({hr_email}) to Manager ({manager_email})")
+        
     except Exception as e:
         print(f"Error sending email: {e}")
     finally:
@@ -106,6 +107,8 @@ async def check_email(email: str, db: Session = Depends(get_db)):
         return JSONResponse(content={"exists": True})
     else:
         return JSONResponse(content={"exists": False})
+    
+    
 
 @router.get("/hr_check_password")
 async def check_hr_password(password: str, db: Session = Depends(get_db)):
@@ -131,60 +134,56 @@ async def user_login(
     password: str = Form(...),
     otp_code: str = Form(...),
     db: Session = Depends(get_db),
-):    
-    user = db.query(User).filter(
-        User.email.like(f"%{email}%"),
-        User.is_deleted == 0
-    ).first()
+):
+    try:
+        user = db.query(User).filter(
+            User.email.like(f"%{email}%"),
+            User.is_deleted == 0
+        ).first()
 
-    if user is None:
-        return JSONResponse(status_code=404, content={"detail": "User not found or account deleted"})
+        if user is None:
+            return JSONResponse(status_code=404, content={"detail": "User not found or account deleted"})
+        
+        if user.role == "manager":
+            if not Hasher.verify_password(password, user.password):
+                return JSONResponse(status_code=401, content={"detail": "Incorrect password"})
+        
+        elif user.role == "employee":
+            if not Hasher.verify_password(password, user.password):
+                return JSONResponse(status_code=401, content={"detail": "Incorrect password employee"})
+        
+        else:
+            return JSONResponse(status_code=403, content={"detail": "Unauthorized role"})
+        
+        # Verify OTP
+        if user.otp_code != otp_code:
+            return JSONResponse(status_code=401, content={"detail": "Incorrect OTP"})
+
+        access_token = create_access_token(
+            data={
+                "user_id": user.user_id,
+                "role": user.role,
+                "department_name": user.department_name,
+            }
+        )
+
+        print("Access Token:", access_token)
+        
+        redirect_url = "/dash" if user.role == "manager" else "/dashboard"
+        response = JSONResponse(status_code=200, content={"redirect_url": redirect_url, "message": "Login successful"})
+
+        response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True, samesite="Lax", secure=False)
+
+        return response
     
-    if user.role == "manager":
+    except Exception as e:
 
-        if not Hasher.verify_password(password, user.password):
-            return JSONResponse(status_code=401, content={"detail": "Incorrect password"})
-    
-    elif user.role == "employee":
-
-        if not Hasher.verify_password(password, user.password):
-            return JSONResponse(status_code=401, content={"detail": "Incorrect password employee"})
-    
-    else:
-        return JSONResponse(status_code=403, content={"detail": "Unauthorized role"})
-    
-
-    # Verify OTP
-    if user.otp_code != otp_code:
-        return JSONResponse(status_code=401, content={"detail": "Incorrect OTP"})
-
-    access_token = create_access_token(
-        data={
-            "user_id": user.user_id,
-            "role": user.role,
-            "department_name": user.department_name,
-        }
-    )
-
-    print("Access Token:", access_token)
-
-    # if user.role == "manager":
-    #     response = RedirectResponse(url="/dash", status_code=303)
-
-    # elif user.role == "employee":
-    #     response = RedirectResponse(url="/dashboard", status_code=303)
-
-    # else:
-    #     raise HTTPException(status_code=403, detail="Unauthorized role")
-    
-    redirect_url = "/dash" if user.role == "manager" else "/dashboard"
-    response = JSONResponse(status_code=200, content={"redirect_url": redirect_url, "message": "Login successful"})
-
-
-    response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True, samesite="Lax", secure=False)
-
-    return response
-
+        print(f"Login error: {str(e)}")
+        # Return a server error message
+        return JSONResponse(
+            status_code=500, 
+            content={"detail": "Server error occurred during login process. Please try again later."}
+        )
 
 @router.post("/create-hr")
 async def create_hr_user(db: Session = Depends(get_db)):

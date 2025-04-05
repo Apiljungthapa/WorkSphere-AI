@@ -1,6 +1,7 @@
 from imports import *
 import bcrypt # type: ignore
 from dotenv import load_dotenv
+import json
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -32,6 +33,8 @@ async def save_employee_details(
 ):    
     
     hashed_password = Hasher.get_password_hash(password)
+
+    print("________________employee save garne code ayo_______________")
 
     try:
        
@@ -359,3 +362,63 @@ async def delete_user(user_id: str, db: Session = Depends(get_db)):
     db.commit()
 
     return RedirectResponse(url="/dash", status_code=303)
+
+
+
+@router.post("/update_policies")
+def update_policies(
+    general_guidelines: str = Form(...),
+    attendance_policy: str = Form(...),
+    leave_policy: str = Form(...),
+    working_hours: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    try:
+        # Parse JSON string safely
+        working_hours_data = json.loads(working_hours)
+
+        # Check if a policy already exists
+        policy = db.query(CompanyPolicy).first()
+
+        if policy:
+            # Update the existing record
+            policy.general_guidelines = general_guidelines
+            policy.attendance_policy = attendance_policy
+            policy.leave_policy = leave_policy
+            policy.working_hours = working_hours_data  # Ensure correct format
+        else:
+            # No existing record, create a new one (only for the first time)
+            policy = CompanyPolicy(
+                general_guidelines=general_guidelines,
+                attendance_policy=attendance_policy,
+                leave_policy=leave_policy,
+                working_hours=working_hours_data
+            )
+            db.add(policy)
+
+        # Save changes to DB
+        db.commit()
+        db.refresh(policy)
+
+        return RedirectResponse(url="/dash", status_code=303)
+
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON format in working_hours."}
+
+
+
+
+@router.get("/policy", response_class=HTMLResponse)
+def get_update_policies(request: Request, db: Session = Depends(get_db)):
+
+    policy = db.query(CompanyPolicy).first()  
+
+    return templates.TemplateResponse("manager/policy.html", {
+        "request": request,
+        "general_guidelines": policy.general_guidelines if policy else "",
+        "attendance_policy": policy.attendance_policy if policy else "",
+        "leave_policy": policy.leave_policy if policy else "",
+        "working_hours": policy.working_hours if policy else ""
+    })
+
+

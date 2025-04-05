@@ -1,4 +1,5 @@
 from imports import *
+from routes import slider
 
 os.environ["GRPC_VERBOSITY"] = "ERROR"
 os.environ["GRPC_TRACE"] = ""
@@ -30,7 +31,7 @@ app.include_router(feedback.router)
 app.include_router(summary.router)
 app.include_router(ragDocsQuery.router)
 app.include_router(notifications.router)
-
+app.include_router(slider.router)
 
 
 

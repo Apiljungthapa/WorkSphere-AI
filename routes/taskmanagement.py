@@ -1,5 +1,5 @@
 from imports import *
-
+import pytz # type: ignore
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 

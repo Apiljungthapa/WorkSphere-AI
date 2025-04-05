@@ -38,6 +38,7 @@ async def create_post(request: Request, title: str = Form(...), content: str = F
         db.add(db_post)
         db.commit()
         db.refresh(db_post)
+        
 
         posts = fetch_posts_for_user(user_id, db) # call gareko func lai
 
@@ -47,12 +48,14 @@ async def create_post(request: Request, title: str = Form(...), content: str = F
         return response
     
     except SQLAlchemyError as e:
+        db.rollback()
         response = RedirectResponse(url="/emp_details", status_code=303)
         response.set_cookie("message", "Failed to create the post!")
         response.set_cookie("message_type", "error")
         return response
     
     except Exception as e:
+        db.rollback()
         print(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred")
 

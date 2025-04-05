@@ -1,14 +1,22 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, Date, DateTime, ForeignKey, func, Boolean, UniqueConstraint,Enum
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import JSON, create_engine, Column, Integer, String, Text, Date, DateTime, ForeignKey, func, Boolean, UniqueConstraint,Enum
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Mapped
 from typing import Optional
 from datetime import datetime, timezone
 
 # Database Configuration
 DATABASE_URL = "mysql+pymysql://root:@localhost/EMS2"
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL, 
+    pool_size=10, 
+    max_overflow=20,
+    pool_timeout=30,  # Connection timeout
+    pool_recycle=3600,  # Recycle connections after 1 hour
+    pool_pre_ping=True  # Test connections before using them
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
 class User(Base):
     __tablename__ = "user"
@@ -26,9 +34,6 @@ class User(Base):
     isannouncement_read = Column(String(10))  
     istask_read = Column(String(10))
     isnotificationread = Column(String(10))
-
-    
-
 
     # One-to-many relationship with Post (a user can have many posts)
     posts = relationship("Post", back_populates="author")  
@@ -120,6 +125,15 @@ class Comment(Base):
     post = relationship('Post', back_populates='comments') 
     user = relationship('User', back_populates='comments')
 
+class CompanyPolicy(Base):
+    __tablename__ = "company_policies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    general_guidelines = Column(String, nullable=False)
+    attendance_policy = Column(String, nullable=False)
+    leave_policy = Column(String, nullable=False)
+    working_hours = Column(JSON, nullable=False)
+    
 
 class SupportFeedback(Base):
     __tablename__ = "support_feedback"
@@ -208,16 +222,14 @@ class ChatHistory(Base):
     filepath = Column(String(255), nullable=True) 
 
 
-# Create tables in the database
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
-# Dependency function to get a database session
 def get_db():
     db = SessionLocal()
     try:
         yield db
+    except Exception as e:
+        db.rollback()
+        raise
     finally:
         db.close()
-
-
-

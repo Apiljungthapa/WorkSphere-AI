@@ -8,6 +8,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
         "/assign-task",
         "/tracking.html",
         "/updateEmployee.html"
+        "/update_policies",
+        "/policy",
+        
+        
     ]
 
     EMPLOYEE_PAGES = [
@@ -22,7 +26,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
         "/summary",
         "/rag",
         "/post/edit",
-        "/check_unread_announcements"
+        "/check_unread_announcements",
+        "/get_policy"
     ]
 
     EXEMPT_PAGES = ["/", "/login", "/check_email", "/ishDetails", "/ishPage", "/static", "/hr_check_password"]

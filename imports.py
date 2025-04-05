@@ -2,7 +2,7 @@ from fastapi import FastAPI, Form, Depends, Request, HTTPException, Query, Uploa
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session,sessionmaker
-from models.database import get_db, User,  Post, Like,Task, Comment, SupportFeedback, Chatroom, Message, Announcement, Notification, ChatHistory
+from models.database import get_db, User,  Post, Like,Task, Comment, SupportFeedback, Chatroom, Message, Announcement, Notification, ChatHistory, CompanyPolicy
 from fastapi.security import OAuth2PasswordBearer
 import random
 from sendgrid import SendGridAPIClient
@@ -31,11 +31,26 @@ from routes import auth, Employeedashboard, Managerdashboard, taskmanagement, po
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.staticfiles import StaticFiles
 import pytz
+import json
 from middlewares.auth_middleware import AuthMiddleware 
 from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv # type: ignore
+from dotenv import load_dotenv
 import asyncio
+from pydantic import BaseModel, Field
+from typing import List, Optional, Annotated
+from typing_extensions import TypedDict
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph import MessagesState
+from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, PromptTemplate
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import MSO_AUTO_SIZE, PP_ALIGN
+import re
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chains.summarize import load_summarize_chain
+from langchain_google_genai import GoogleGenerativeAI, ChatGoogleGenerativeAI
+from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, PromptTemplate
 
 import logging
 logging.getLogger("grpc").setLevel(logging.ERROR)

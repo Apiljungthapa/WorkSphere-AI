@@ -19,70 +19,81 @@ async def upload_rag_file(
     file_path: str = Form(None)
 ):
     """Handles file upload & allows subsequent queries without re-uploading the file."""
+    try:
+        # Authenticate User
+        token = request.cookies.get("access_token")
+        if not token:
+            raise HTTPException(status_code=401, detail="Not authenticated")
 
-    # Authenticate User
-    token = request.cookies.get("access_token")
-    if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+        token_data = decode_access_token(token.replace("Bearer ", ""))
+        user_id = token_data.get("user_id")
 
-    token_data = decode_access_token(token.replace("Bearer ", ""))
-    user_id = token_data.get("user_id")
+        # Fetch user from database
+        user = db.query(User).filter(User.user_id == user_id, User.is_deleted == 0).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
 
-    # Fetch user from database
-    user = db.query(User).filter(User.user_id == user_id, User.is_deleted == 0).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        # If a new file is uploaded, save it
+        if file:
+            full_name = user.full_name
+            user_directory = f"resources/{user_id}_{full_name}"
+            os.makedirs(user_directory, exist_ok=True)
+            file_path = os.path.join(user_directory, file.filename)
 
-    # If a new file is uploaded, save it
-    if file:
-        full_name = user.full_name
-        user_directory = f"resources/{user_id}_{full_name}"
-        os.makedirs(user_directory, exist_ok=True)
-        file_path = os.path.join(user_directory, file.filename)
+            # Save file - use async file operations
+            file_content = await file.read()
+            with open(file_path, "wb") as f:
+                f.write(file_content)
 
-        # Save file
-        with open(file_path, "wb") as f:
-            f.write(await file.read())
+        # Ensure file_path exists (either from previous upload or current request)
+        if not file_path:
+            raise HTTPException(status_code=400, detail="No file provided and no existing file found.")
+        
+        # Get Nepal time
+        utc_time = datetime.now(pytz.utc)
+        nepal_time = convert_utc_to_nepal_local(utc_time)
 
-    # Ensure file_path exists (either from previous upload or current request)
-    if not file_path:
-        raise HTTPException(status_code=400, detail="No file provided and no existing file found.")
+        # Process the PDF query
+        ai_response = await process_pdf_query(file_path, question) 
+
+        # Format the response
+        if hasattr(ai_response, "content"):
+            ai_response = ai_response.content
+        else:
+            ai_response = str(ai_response)
+
+        # Create and save chat history entry
+        new_chat_entry = ChatHistory(
+            user_query=question,
+            response=ai_response,
+            user_id=user_id,
+            timestamp=nepal_time,
+            filepath=file_path  
+        )
+        db.add(new_chat_entry)
+        db.commit()  # Commit the transaction
+        
+        # Fetch chat history in a new transaction
+        chat_history = db.query(ChatHistory).filter(
+            ChatHistory.user_id == user_id,
+            ChatHistory.filepath == file_path
+        ).order_by(ChatHistory.id.asc()).all()
+
+        history_data = [{"question": chat.user_query, "response": chat.response} for chat in chat_history]
+
+        return JSONResponse({
+            "file_path": file_path,
+            "user_query": question,
+            "ai_response": ai_response,
+            "chat_history": history_data
+        })
     
-    utc_time = datetime.now(pytz.utc)
-
-    nepal_time = convert_utc_to_nepal_local(utc_time)
-
-    ai_response = await process_pdf_query(file_path, question) 
-
-    if hasattr(ai_response, "content"):
-        ai_response = ai_response.content
-    else:
-        ai_response = str(ai_response)
-
-    new_chat_entry = ChatHistory(
-        user_query=question,
-        response=ai_response,
-        user_id=user_id,
-        timestamp=nepal_time,
-        filepath=file_path  
-    )
-    db.add(new_chat_entry)
-    db.commit()
-
-    chat_history = db.query(ChatHistory).filter(
-        ChatHistory.user_id == user_id,
-        ChatHistory.filepath == file_path
-    ).order_by(ChatHistory.id.asc()).all()
-
-    history_data = [{"question": chat.user_query, "response": chat.response} for chat in chat_history]
-
-    return JSONResponse({
-        "file_path": file_path,
-        "user_query": question,
-        "ai_response": ai_response,
-        "chat_history": history_data
-    })
-
+    except Exception as e:
+        # Roll back transaction in case of error
+        db.rollback()
+        # Log the error for debugging
+        logging.error(f"Error in upload_rag_file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 # from imports import *
 # import pytz

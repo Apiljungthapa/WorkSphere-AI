@@ -1,6 +1,14 @@
-from imports import *
+# from imports import *
+import os
+from pathlib import Path
+import random
+import string
+from fastapi import HTTPException
 import pytz 
 from passlib.context import CryptContext
+from models.database import get_db, User,  Post, Like,Task, Comment, SupportFeedback, Chatroom, Message, Announcement, Notification, ChatHistory, CompanyPolicy
+from sqlalchemy.orm import Session,sessionmaker
+
 
 BASE_DIR = Path("resources")
 
@@ -9,6 +17,9 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 def generate_initials(full_name: str) -> str:
+
+    if not full_name:
+        return ""
   
     name_parts = full_name.split()
 
