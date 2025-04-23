@@ -23,7 +23,6 @@ def assign_task(
     dueDate: str = Form(...),
     db: Session = Depends(get_db),
 ):
-
     task_id = generate_task_id()
 
     manager_id = "MGR001"  
@@ -220,12 +219,12 @@ async def update_submission(task_id: str, request: Request, db: Session = Depend
     )
 
 
-
 @router.post("/submit_update")
 async def submit_update(
     request: Request,
     task_id: str = Form(...),
     description: str = Form(...),
+    previous_docs_path: str = Form(...),
     file: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
@@ -241,33 +240,34 @@ async def submit_update(
     token_data = decode_access_token(token.replace("Bearer ", ""))
     user_id = token_data.get("user_id")
     
-    # Fetch the user from the database
+    # Fetch user
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Create user directory if it doesn't exist
+    # User directory
     user_dir = create_user_directory(user.user_id, user.full_name)
     if not os.path.exists(user_dir):
         os.makedirs(user_dir)
-    
-    # Fetch the task by task_id
+
+    # Fetch task
     task = db.query(Task).filter(Task.task_id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    # Update the description
+    # Update description
     task.description = description
-    
-    # Handle the file upload if provided
-    if file:
-        file_path = user_dir / file.filename  
-        with file_path.open("wb") as buffer:
-            buffer.write(await file.read())    
 
+    # File handling
+    if file and file.filename:
+        file_path = user_dir / file.filename
+        with file_path.open("wb") as buffer:
+            buffer.write(await file.read())
         task.docs_path = str(file_path)
-    
+    else:
+        task.docs_path = previous_docs_path  # Use existing path
+
     db.commit()
-    db.refresh(task)  
-    
+    db.refresh(task)
+
     return RedirectResponse(url="/assignment", status_code=303)

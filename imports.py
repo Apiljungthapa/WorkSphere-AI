@@ -5,8 +5,6 @@ from sqlalchemy.orm import Session,sessionmaker
 from models.database import get_db, User,  Post, Like,Task, Comment, SupportFeedback, Chatroom, Message, Announcement, Notification, ChatHistory, CompanyPolicy
 from fastapi.security import OAuth2PasswordBearer
 import random
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 import random
 import string
 from collections import defaultdict
@@ -27,7 +25,7 @@ from utils.security import create_access_token, decode_access_token
 from AIServices.sentiment import SentimentAnalyzer
 from AIServices.summarizer import DocumentSummarizer
 from AIServices.rag import process_pdf_query,RAGSystem
-from routes import auth, Employeedashboard, Managerdashboard, taskmanagement, postmanagement, announcement, chat, feedback, summary, ragDocsQuery, notifications
+from routes import auth, Employeedashboard, Managerdashboard, taskmanagement, postmanagement, announcement, chat, feedback, summary, notifications, ragDocsQuery
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.staticfiles import StaticFiles
 import pytz
@@ -49,7 +47,7 @@ import re
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains.summarize import load_summarize_chain
-from langchain_google_genai import GoogleGenerativeAI, ChatGoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, PromptTemplate
 
 import logging

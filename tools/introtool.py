@@ -2,11 +2,15 @@ import os
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
+from langchain_groq import ChatGroq
 from schemas.schemas import Introduction
 load_dotenv()
 
 # Access the variables
-api_key = "AIzaSyARnfimL36ApPBnP2lJVCJAYtr8E2Fo10o"
+# api_key = "AIzaSyARnfimL36ApPBnP2lJVCJAYtr8E2Fo10o"
+
+api_key = os.getenv("GROQ_API")
+
 def giveIntroduction(content: str) -> dict:
     """
     This tool generates the introduction from the content given by the user.
@@ -16,7 +20,12 @@ def giveIntroduction(content: str) -> dict:
     """
 
     # Initialize the LLM model
-    llm1 = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+    # llm1 = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+
+    llm1 = ChatGroq(
+            model="gemma2-9b-it",
+            api_key=api_key
+        )
 
     # Structured output for Introduction
     structured_llm1 = llm1.with_structured_output(Introduction)
@@ -37,3 +46,4 @@ def giveIntroduction(content: str) -> dict:
 
     # Return the result
     return {"Introduction": result1.model_dump()}
+

@@ -2,33 +2,28 @@ import os
 import torch
 from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
 
-# Define model directory
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_DIR = os.path.join(BASE_DIR, "sentimentmodel", "checkpoint-1500")  
-
-print(BASE_DIR)
-print(MODEL_DIR)
-
 class SentimentAnalyzer:
-    def __init__(self,MODEL_DIR):
+    def __init__(self, model_dir):
         """
         Initialize the SentimentAnalyzer with a pretrained DistilBERT model.
         """
         try:
-            self.tokenizer = DistilBertTokenizer.from_pretrained(MODEL_DIR)
-            self.model = DistilBertForSequenceClassification.from_pretrained(MODEL_DIR)
-            self.model.eval()  
-            
-            
+            self.tokenizer = DistilBertTokenizer.from_pretrained(model_dir)
+            self.model = DistilBertForSequenceClassification.from_pretrained(model_dir)
+            self.model.eval()
         except Exception as e:
             raise RuntimeError(f"Error loading model: {e}")
 
         # Define label mapping (0 -> Negative, 1 -> Positive)
         self.label_map = {0: "Negative", 1: "Positive"}
+        
+        # Initialize device - use CUDA if available
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.device)
 
-    def predict(self, text):
+    async def predict(self, text):
         """
-        Predict sentiment for a single string input.
+        Predict sentiment for a single string input asynchronously.
 
         :param text: Input text from frontend.
         :return: Dictionary with predicted label and confidence score.
@@ -39,6 +34,9 @@ class SentimentAnalyzer:
         try:
             # Tokenize and preprocess input
             inputs = self.tokenizer(text, padding=True, truncation=True, return_tensors="pt", max_length=512)
+            
+            # Move inputs to the same device as the model
+            inputs = {k: v.to(self.device) for k, v in inputs.items()}
 
             # Perform inference
             with torch.no_grad():

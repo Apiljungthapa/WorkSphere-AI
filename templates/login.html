@@ -61,12 +61,12 @@
                 body: formData
             });
 
-            const data = await response.json(); // Parse JSON response
+            const data = await response.json();
 
             if (!response.ok) {
                 showError(data.detail || "Login failed! Please try again.");
             } else {
-                window.location.href = data.redirect_url; // Redirect on success
+                window.location.href = data.redirect_url;
             }
         } catch (error) {
             showError("An error occurred while logging in. Please try again.");

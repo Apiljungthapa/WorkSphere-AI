@@ -1,9 +1,8 @@
-
 from imports import *
 
 from AIServices.slideAI import process_pdf
 load_dotenv()
-api_key = os.getenv("GEMINI_API_KEY")
+api_key = os.getenv("GROQ_API")
 
 def new_presentation(pdf_path, api_key, template_path, output_path):
     """
@@ -15,7 +14,6 @@ def new_presentation(pdf_path, api_key, template_path, output_path):
         template_path (str): Path to the template presentation
         output_path (str): Path where the output presentation will be saved
     """
-    # Process the PDF and get the sections
     introsection, bodysection, concsection = process_pdf(pdf_path, api_key)
     
     prs = Presentation(template_path)
@@ -35,7 +33,6 @@ def new_presentation(pdf_path, api_key, template_path, output_path):
         text_frame = content.text_frame
         text_frame.word_wrap = True
 
-        # Handling heading description as a paragraph (not a bullet point)
         if heading_desc:
             word_count = len(heading_desc.split())
 

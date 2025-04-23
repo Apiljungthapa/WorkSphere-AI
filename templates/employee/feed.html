@@ -54,10 +54,11 @@
   </body>
   <script>
     const userId = "{{ logged_in_user_id }}";
-    // const ws = new WebSocket(`ws://${window.location.host}/ws/${userId}`);
-    const ws = new WebSocket(
-      `wss://lemming-noted-cub.ngrok-free.app/ws/${userId}`
-    );
+    const ws = new WebSocket(`ws://${window.location.host}/ws/${userId}`);
+    
+    // const ws = new WebSocket(
+    //   `wss://lemming-noted-cub.ngrok-free.app/ws/${userId}`
+    // );
 
     ws.onmessage = function (event) {
       const data = JSON.parse(event.data);

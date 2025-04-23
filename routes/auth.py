@@ -1,6 +1,8 @@
 from imports import *
 import bcrypt # type: ignore
 from dotenv import load_dotenv
+import re
+from sqlalchemy import text
 
 load_dotenv()
 router = APIRouter()
@@ -136,6 +138,11 @@ async def user_login(
     db: Session = Depends(get_db),
 ):
     try:
+
+        email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not re.match(email_regex, email):
+            return JSONResponse(status_code=400, content={"detail": "Invalid email format"})
+    
         user = db.query(User).filter(
             User.email.like(f"%{email}%"),
             User.is_deleted == 0
@@ -179,7 +186,7 @@ async def user_login(
     except Exception as e:
 
         print(f"Login error: {str(e)}")
-        # Return a server error message
+
         return JSONResponse(
             status_code=500, 
             content={"detail": "Server error occurred during login process. Please try again later."}
@@ -192,6 +199,7 @@ async def create_hr_user(db: Session = Depends(get_db)):
         return {"message": "HR user created successfully", "user": hr_user.email}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create HR user: {str(e)}")
+    
 
 @router.post("/create-manager")
 async def create_manager_user(db: Session = Depends(get_db)):

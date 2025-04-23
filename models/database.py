@@ -5,7 +5,7 @@ from typing import Optional
 from datetime import datetime, timezone
 
 # Database Configuration
-DATABASE_URL = "mysql+pymysql://root:@localhost/EMS2"
+DATABASE_URL = "mysql+pymysql://root:@localhost/ems2"
 engine = create_engine(
     DATABASE_URL, 
     pool_size=10, 

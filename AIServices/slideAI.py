@@ -6,11 +6,12 @@ from tools.conclusiontool import giveConclusion
 from tools.introtool import giveIntroduction
 from tools.finalizetool import Finalize
 from utils.state import ContentState  
+from langchain_groq import ChatGroq
 
-api_key = os.getenv("GEMINI_API_KEY")
+api_key = os.getenv("GROQ_API")
+# self.llm = GoogleGenerativeAI(model="gemini-1.5-flash", google_api_key="AIzaSyAgz_TNz-6aQV0mSwWPxcy9aaGKwWjr7U4")
 
 def process_pdf(pdf_path,api_key):
-
     def doc_words_join(inp):
         loader = PyPDFLoader(inp)
         pages = loader.load_and_split()
@@ -22,7 +23,7 @@ def process_pdf(pdf_path,api_key):
     
     allwords=doc_words_join(pdf_path)
 
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=5000, chunk_overlap=500)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=500)
     chunks = text_splitter.create_documents([allwords])
     chunks_prompt="""
     Please summarize the below Document. The summary must be very clear with proper phrases and easy words:
@@ -32,7 +33,11 @@ def process_pdf(pdf_path,api_key):
     map_prompt_template=PromptTemplate(input_variables=['text'], template=chunks_prompt)
 
     system = """
+
+    You are an expert summarizer with a deep understanding of extracting key insights from lengthy and complex documents.
+
     Your task is to carefully analyze the given text chunks and capture all the important details. Ensure that no information is missed and present everything in clear, continuous text.
+    
     """
 
     human="{text}"
@@ -42,11 +47,17 @@ def process_pdf(pdf_path,api_key):
                                                     HumanMessagePromptTemplate.from_template(human)])
     
     
-    llm_model = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+    # llm_model = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+
+    llm_model = ChatGroq(
+            model="gemma2-9b-it",
+            api_key=api_key
+        )
 
     
     summary_chain = load_summarize_chain(llm=llm_model, chain_type='map_reduce', map_prompt=map_prompt_template, combine_prompt=final_combine_prompt,
                                             verbose=False)
+
 
     resultss = summary_chain.invoke(chunks)
 

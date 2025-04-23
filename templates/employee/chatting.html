@@ -41,10 +41,11 @@
     console.log("chatroom_id:", chatroom_id);
 
     // Initialize WebSocket connection
-    // const ws = new WebSocket(`ws://localhost:8000/ws/${emp1_id}`);
-    const ws = new WebSocket(
-      `wss://lemming-noted-cub.ngrok-free.app/ws/${emp1_id}`
-    );
+    const ws = new WebSocket(`ws://localhost:8000/ws/${emp1_id}`);
+    
+    // const ws = new WebSocket(
+    //   `wss://lemming-noted-cub.ngrok-free.app/ws/${emp1_id}`
+    // );
 
     ws.onopen = function () {
       console.log("WebSocket connection established.");

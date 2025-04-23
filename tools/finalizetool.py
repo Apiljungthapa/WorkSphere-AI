@@ -2,12 +2,14 @@ import os
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
+from langchain_groq import ChatGroq
 from schemas.schemas import FinalPPT
 from utils.state import ContentState
 load_dotenv()
 
 # Access the variables
-api_key = "AIzaSyARnfimL36ApPBnP2lJVCJAYtr8E2Fo10o"
+# api_key = "AIzaSyARnfimL36ApPBnP2lJVCJAYtr8E2Fo10o"
+api_key = os.getenv("GROQ_API")
 
 
 def Finalize(state : ContentState) -> dict:
@@ -20,7 +22,12 @@ def Finalize(state : ContentState) -> dict:
     """
 
     # Initialize the LLM model
-    llm4 = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+    # llm4 = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+
+    llm4 = ChatGroq(
+            model="gemma2-9b-it",
+            api_key=api_key
+        )
 
     # Structured output for duplication check
     structured_llm4 = llm4.with_structured_output(FinalPPT)

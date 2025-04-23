@@ -10,7 +10,7 @@ logging.getLogger("grpc").setLevel(logging.ERROR)
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-api_key = os.getenv("GEMINI_API_KEY")
+api_key = os.getenv("GROQ_API")
 
 
 @router.get("/slider", response_class=HTMLResponse)
@@ -46,7 +46,7 @@ def generate_presentation(
             raise HTTPException(status_code=400, detail="Only PDF files are supported")
 
         # Map template name to path
-        template_path = "static/slides/Presentation2.pptx"  # Default template
+        template_path = "static/slides/Presentation2.pptx"  
         if template_name:
             if template_name.lower() == "present1":
                 template_path = "static/slides/Presentation1.pptx"

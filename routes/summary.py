@@ -20,6 +20,7 @@ async def upload_file(request: Request, db: Session = Depends(get_db), file: Upl
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     token_data = decode_access_token(token.replace("Bearer ", ""))
+    
     user_id = token_data.get("user_id")
 
     # Fetch user from the database
@@ -33,6 +34,7 @@ async def upload_file(request: Request, db: Session = Depends(get_db), file: Upl
     user_directory = f"resources/{user_id}_{full_name}"
 
     if not os.path.exists(user_directory):
+        
         os.makedirs(user_directory)
 
     file_path = os.path.join(user_directory, file.filename)
@@ -49,10 +51,5 @@ async def summarize_text(request: Request, file_path: str = Query(...)):
     file_path = Path(file_path)
     if not file_path.exists() or not file_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")
-
-    # Summarizer Integration
     summary = await summarizer.summarize_document(str(file_path))
-
-    print(summary)
-
     return JSONResponse(content={"summary": summary})

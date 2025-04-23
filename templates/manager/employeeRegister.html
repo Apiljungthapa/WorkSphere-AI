@@ -1,103 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employee Registration Form</title>
-  <link rel="stylesheet" href="{{ url_for('static', path='/employeeRegister.css') }}">
-  
-</head>
-<body>
-  <div class="container">
-    <!-- Back button to /dash -->
-    <a href="/dash" class="back-btn">Back</a>
-    
-    <div class="form-header">
-      <h1>Employee Registration Form</h1>
-      <p>Assign credentials to employee</p>
-    </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Registration Form</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='/employeeRegister.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Back button to /dash -->
+      <a href="/dash" class="back-btn">Back</a>
 
-    <div class="error-message" id="error-message"></div>
-    
-    <form id="employee-registration-form">
+      <div class="form-header">
+        <h1>Employee Registration Form</h1>
+        <p>Assign credentials to employee</p>
+      </div>
+
+      <div class="error-message" id="error-message"></div>
+
+      <form id="employee-registration-form">
         <div class="form-row">
-            <div class="form-group">          
-                <label for="fullname" class="required">Full Name</label>
-                <input type="text" id="fullname" name="fullname" class="form-control" placeholder="Enter full name" required>
-            </div>
+          <div class="form-group">
+            <label for="fullname" class="required">Full Name</label>
+            <input
+              type="text"
+              id="fullname"
+              name="fullname"
+              class="form-control"
+              placeholder="Enter full name"
+              required
+            />
+          </div>
         </div>
-        
+
         <div class="form-row">
-            <div class="form-group">
-                <label for="email" class="required">Email Address</label>
-                <input type="email" id="email" name="email" class="form-control" placeholder="Enter email address" required>
-            </div>
+          <div class="form-group">
+            <label for="email" class="required">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-control"
+              placeholder="Enter email address"
+              required
+            />
+          </div>
         </div>
-        
+
         <div class="form-row">
-            <div class="form-group">
-                <label for="phone" class="required">Phone Number</label>
-                <input type="tel" id="phone" name="phone" class="form-control" placeholder="Enter phone number" required>
-            </div>
+          <div class="form-group">
+            <label for="phone" class="required">Phone Number</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              class="form-control"
+              placeholder="Enter phone number"
+              required
+            />
+          </div>
         </div>
-        
+
         <div class="form-row">
-            <div class="form-group">
-                <label for="position" class="required">Position</label>
-                <input type="text" id="position" name="position" class="form-control" placeholder="Current position" required>
-            </div>
+          <div class="form-group">
+            <label for="position" class="required">Position</label>
+            <input
+              type="text"
+              id="position"
+              name="position"
+              class="form-control"
+              placeholder="Current position"
+              required
+            />
+          </div>
         </div>
-        
+
         <div class="form-row">
-            <div class="form-group">
-                <label for="department">Department Name</label>
-                <input type="text" id="department" name="department" class="form-control" placeholder="Enter department name">
-            </div>
+          <div class="form-group">
+            <label for="department">Department Name</label>
+            <input
+              type="text"
+              id="department"
+              name="department"
+              class="form-control"
+              placeholder="Enter department name"
+            />
+          </div>
         </div>
-        
+
         <!-- Added password field -->
         <div class="form-row">
-            <div class="form-group">
-                <label for="password" class="required">Password</label>
-                <input type="password" id="password" name="password" class="form-control" placeholder="Create password" required onkeyup="checkPasswordStrength()">
-                <div class="password-strength">
-                    <div id="password-strength-bar" class="password-strength-bar"></div>
-                </div>
-                <div id="password-strength-text" class="password-strength-text">Password strength</div>
+          <div class="form-group">
+            <label for="password" class="required">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+              placeholder="Create password"
+              required
+              onkeyup="checkPasswordStrength()"
+            />
+            <div class="password-strength">
+              <div
+                id="password-strength-bar"
+                class="password-strength-bar"
+              ></div>
             </div>
+            <div id="password-strength-text" class="password-strength-text">
+              Password strength
+            </div>
+          </div>
         </div>
-        
-        
-    
-        <button type="button" onclick="submitForm(event)" class="submit-btn">Register Employee</button>
 
-    
+        <button type="button" onclick="submitForm(event)" class="submit-btn">
+          Register Employee
+        </button>
+
         <div class="form-footer">
-            All information submitted will be handled according to company policy
+          All information submitted will be handled according to company policy
         </div>
-    </form>
-    
-  </div>
+      </form>
+    </div>
 
-  <script>
-    function showError(message) {
+    <script>
+      function showError(message) {
         const errorDiv = document.getElementById("error-message");
         errorDiv.textContent = message;
         errorDiv.style.display = "block";
 
         setTimeout(() => {
-        errorDiv.style.display = "none";
-    }, 5000);
-    }
+          errorDiv.style.display = "none";
+        }, 5000);
+      }
 
-    function hideError() {
-    const errorDiv = document.getElementById("error-message");
-    errorDiv.style.display = "none"; // Hide error div
-}
+      function hideError() {
+        const errorDiv = document.getElementById("error-message");
+        errorDiv.style.display = "none"; // Hide error div
+      }
 
-    function validateForm() {
-        
-
+      function validateForm() {
         const fullname = document.getElementById("fullname").value.trim();
         const email = document.getElementById("email").value.trim();
         const phone = document.getElementById("phone").value.trim();
@@ -105,63 +150,73 @@
 
         const nameRegex = /^[a-zA-Z\s]+$/;
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        const phoneRegex = /^[0-9]{10}$/;
+        const phoneRegex = /^\d{10}$/; // Digits only, exactly 10
         const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
         if (!nameRegex.test(fullname)) {
-            showError("Full name must contain only letters and spaces.");
-            return false;
+          showError("Please enter full name of recruited employees.");
+          return false;
         }
         if (!emailRegex.test(email)) {
-            showError("Please enter a valid email address with '@'.");
-            return false;
+          showError("Please enter a valid email address with '@'.");
+          return false;
+        }
+
+        if (!/^\d+$/.test(phone)) {
+          showError("Phone number should contain only digits.");
+          return false;
         }
         if (!phoneRegex.test(phone)) {
-            showError("Phone number must be exactly 10 digits.");
-            return false;
+          showError("Phone number must be exactly 10 digits.");
+          return false;
         }
+
         if (!passwordRegex.test(password)) {
-            showError("Password must be at least 8 characters long and contain a letter and a number.");
-            return false;
+          showError(
+            "Password must be at least 8 characters long and contain a letter and a number."
+          );
+          return false;
         }
 
         document.getElementById("error-message").style.display = "none";
         return true;
-    }
+      }
 
-    async function submitForm(event) {
+      async function submitForm(event) {
         event.preventDefault();
 
         if (!validateForm()) return;
 
-        const form = document.getElementById('employee-registration-form');
+        const form = document.getElementById("employee-registration-form");
         const formData = new FormData(form);
 
         try {
-            const response = await fetch('/save-employee', {
-                method: 'POST',
-                body: formData
-            });
+          const response = await fetch("/save-employee", {
+            method: "POST",
+            body: formData,
+          });
 
-            if (response.ok) {
-                alert("Employee registered successfully!");
+          if (response.ok) {
+            alert("Employee registered successfully!");
 
-                const userResponse = confirm("Would you like to register another employee?");
-                if (userResponse) {
-                    form.reset();
-                } else {
-                    window.location.href = '/dash';
-                }
+            const userResponse = confirm(
+              "Would you like to register another employee?"
+            );
+            if (userResponse) {
+              form.reset();
             } else {
-                showError("Failed to register employee. Please try again.");
+              window.location.href = "/dash";
             }
+          } else {
+            showError("Failed to register employee. Please try again.");
+          }
         } catch (error) {
-            console.error("Error:", error);
-            showError("An error occurred while registering the employee.");
+          console.error("Error:", error);
+          showError("An error occurred while registering the employee.");
         }
-    }
+      }
 
-    function checkPasswordStrength() {
+      function checkPasswordStrength() {
         const password = document.getElementById("password").value;
         const strengthBar = document.getElementById("password-strength-bar");
         const strengthText = document.getElementById("password-strength-text");
@@ -178,46 +233,7 @@
         strengthBar.style.background = colors[strength - 1] || "gray";
         strengthBar.style.width = `${strength * 25}%`;
         strengthText.textContent = strengthLevels[strength - 1] || "Very Weak";
-    }
-</script>
-
-  <!-- <script>
-    async function submitForm(event) {
-    event.preventDefault();  // This is crucial to stop the default GET request
-
-    const form = document.getElementById('employee-registration-form');
-
-    if (!form.checkValidity()) {
-        alert("Please fill all required fields correctly.");
-        return;
-    }
-
-    const formData = new FormData(form);
-
-    try {
-        const response = await fetch('/save-employee', {
-            method: 'POST',
-            body: formData
-        });
-
-        if (response.ok) {
-            alert("Employee registered successfully!");
-
-            const userResponse = confirm("Would you like to register another employee?");
-            if (userResponse) {
-                form.reset();
-            } else {
-                window.location.href = '/dash';
-            }
-        } else {
-            alert("Failed to register employee.");
-        }
-    } catch (error) {
-        console.error("Error:", error);
-        alert("An error occurred while registering the employee.");
-    }
-}
-
-  </script> -->
-</body>
+      }
+    </script>
+  </body>
 </html>

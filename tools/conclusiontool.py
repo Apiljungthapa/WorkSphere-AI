@@ -2,11 +2,13 @@ import os
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
+from langchain_groq import ChatGroq
 from schemas.schemas import Conclusion
 load_dotenv()
 
 # Access the variables
-api_key = "AIzaSyARnfimL36ApPBnP2lJVCJAYtr8E2Fo10o"
+# api_key = "AIzaSyARnfimL36ApPBnP2lJVCJAYtr8E2Fo10o"
+api_key = os.getenv("GROQ_API")
 
 def giveConclusion(content: str) -> dict:
     """
@@ -17,7 +19,12 @@ def giveConclusion(content: str) -> dict:
     """
 
     # Initialize the LLM model
-    llm3 = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+    # llm3 = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+
+    llm3 = ChatGroq(
+            model="gemma2-9b-it",
+            api_key=api_key
+        )
 
     # Structured output for Conclusion
     structured_llm3 = llm3.with_structured_output(Conclusion)

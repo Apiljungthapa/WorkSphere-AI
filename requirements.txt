@@ -3,13 +3,11 @@ uvicorn
 sqlalchemy
 python-dotenv
 python-multipart
-sendgrid
 python-jose
 pytz
 python-pptx
 langchain
 langchain-google-genai
-google-generativeai
 langgraph
 langchain-community
 pypdf
@@ -20,7 +18,5 @@ passlib
 torch
 transformers
 docx2txt
-langchain_groq
-langchain_chroma
 langchain_huggingface
 pytest
