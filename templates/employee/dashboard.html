@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Employee Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='/dashboard.css') }}">
+    <style>
+        /* Enhanced card styles */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.6), rgba(255,255,255,0.3));
+        }
+        
+        .gradient-card.blue {
+            background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+            color: white;
+        }
+        
+        .gradient-card.green {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+        }
+        
+        .gradient-card.purple {
+            background: linear-gradient(135deg, #8e2de2, #4a00e0);
+            color: white;
+        }
+        
+        .gradient-card.orange {
+            background: linear-gradient(135deg, #f2994a, #f2c94c);
+            color: white;
+        }
+        
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card i {
+            margin-right: 10px;
+            font-size: 22px;
+        }
+
+        .tit{
+            color: #e0e0e0;
+        }
+        .sec{
+            color: #000000;
+        }
+        
+        .card .large {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        .card p {
+            margin: 5px 0;
+            opacity: 0.9;
+        }
+        
+        .card.clickable-card {
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card.clickable-card::after {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .card.clickable-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card.clickable-card:hover::after {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+       
+        /* Enhanced Office Policy Card */
+        .policy-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .policy-card .policy-icon {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        
+        .policy-card .policy-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .policy-card .policy-description {
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .policy-card .view-button {
+            margin-top: auto;
+            background-color: rgba(255, 255, 255, 0.25);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            transition: all 0.2s ease;
+        }
+        
+        .policy-card .view-button:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .policy-card .view-button i {
+            margin-left: 5px;
+            font-size: 14px;
+        }
+        
+        /* Working Hours Card */
+        .hours-card {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .hours-card .time {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .hours-card .days {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .hours-card .day {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+            position: relative;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #666;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #f5f5f5;
+            transition: all 0.2s ease;
+        }
+        
+        .close-modal:hover {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        
+        .policy-content {
+            margin-top: 20px;
+        }
+        
+        .policy-content h2 {
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .policy-content h2 i {
+            margin-right: 10px;
+            color: #4a00e0;
+        }
+        
+        .policy-content h3 {
+            color: #444;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .policy-content h3 i {
+            margin-right: 10px;
+            color: #4a00e0;
+        }
+        
+        .policy-content p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .working-hours {
+            margin-top: 30px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .working-hours h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .working-hours table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .working-hours th, .working-hours td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .working-hours th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .working-hours tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .working-hours tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        
+        /* Loading spinner */
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4a00e0;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Error message */
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+            font-size: 16px;
+            background-color: #fef0f0;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <h2 class="tit">WorkSphere AI 
+                <i class="fas fa-times close-icon"></i>
+            </h2>
+            <nav>
+                <a href="/feedback"><i class="fas fa-comment-alt"></i> Feedback</a>
+                <a href="/view_announcements?mark_as_read=true" class="announcement-link">
+                    <i class="fas fa-sync-alt"></i>
+                    Announcements
+                    <span id="announcement-indicator" style="color: red; font-size: 14px; display: none;">🔴</span>
+                </a>
+                <a href="/logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+        <main class="main-content" id="mainContent">
+            <div class="top-bar">
+                <div class="left-section">
+                    <button class="hamburger-menu"><a href=""><i class="fas fa-bars"></i></a></button>
+                    <div class="welcome-message">Welcome, {{ user_full_name }}</div>
+                </div>
+
+                <div class="right-section">
+                    <a href="/view_notifications" class="notify">
+                        <i class="fas fa-bell"></i>
+                        {% if show_red_dot %}
+                        <span class="notify-counter" id="notification-indicator"
+                            style="color: red; font-size: 8px; display: inline;">
+                        </span>
+                        {% else %}
+                        <span class="notify-counter" id="notification-indicator"
+                            style="display: none;">
+                        </span>
+                        {% endif %}
+                    </a>
+                    <a href="/profile" style="background: none; border: none; cursor: pointer;">
+                        <i class="fas fa-user-circle" style="color: white; font-size: 1.5rem;"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-container">
+                <!-- Pending Tasks Card -->
+                <div class="card gradient-card blue">
+                    <h3><i class="fas fa-tasks"></i> Pending Tasks</h3>
+                    <p class="large">{{ pending_task_count }}</p>
+                    <p>Tasks awaiting completion</p>
+                </div>
+                
+                <!-- Announcements Card -->
+                <div class="card gradient-card green">
+                    <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
+                    <p class="large">{{ pending_announcement_count|default('3') }}</p>
+                    <div class="badges">
+                        <span class="badge badge-green">{{ pending_announcement_count|default('3') }} New</span>
+                    </div>
+                </div>
+                
+                <!-- Enhanced Office Policy Card -->
+                <div class="card gradient-card purple clickable-card" onclick="fetchAndOpenPolicyModal()">
+                    <div class="policy-card">
+                        <i class="fas fa-file-alt policy-icon"></i>
+                        <div class="policy-title">Office Policy</div>
+                        <p class="policy-description">Access company guidelines, rules, and procedures</p>
+                        <button class="view-button">View Details <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+                
+                <!-- Enhanced Working Hours Card -->
+                <div class="card gradient-card orange">
+                    <div class="hours-card">
+                        <h3><i class="fas fa-clock"></i> Working Hours</h3>
+                        <p class="time">9:00 - 17:00</p>
+                        <div class="days">
+                            <div class="day">M</div>
+                            <div class="day">W</div>
+                            <div class="day">F</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="sec">My Departments</h2>
+            <div class="card-container">
+                <a href="/emp_details" style="text-decoration: none; color: inherit;">
+                    <div class="card clickable-card">
+                        <h3>
+                            <i class="fas fa-laptop-code" style="color: black;"></i> 
+                            {{ department_name }}
+                        </h3>
+                        <p>{{ department_head }} - Department Head</p>
+
+                        <div class="badges">
+                            <span class="badge badge-green">{{ department_members_count }} Members</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <!-- Enhanced Office Policy Modal -->
+    <div id="policyModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closePolicyModal()">&times;</span>
+            <div id="policyContent" class="policy-content">
+                <!-- Content will be loaded dynamically from API -->
+                <div class="loader">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check unread announcements
+        async function checkUnreadAnnouncements() {
+            const response = await fetch("/check_unread_announcements");
+            const data = await response.json();
+            const redDot = document.getElementById("announcement-indicator");
+
+            if (data.unread) {
+                redDot.style.display = "inline";  
+            } else {
+                redDot.style.display = "none";
+            }
+        }
+
+        checkUnreadAnnouncements();
+
+        // Check notifications
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('/check-unread')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.unread) {
+                        document.getElementById("notification-indicator").style.display = "inline";
+                    }
+                });
+        });
+
+        // Mark notifications as read
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelector(".notify").addEventListener("click", function() {
+                fetch("/mark_notifications_as_read")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById("notification-indicator").style.display = "none";
+                        }
+                    });
+            });
+        });
+
+        // Sidebar functionality
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const hamburgerMenu = document.querySelector('.hamburger-menu');
+        const closeIcon = document.querySelector('.close-icon'); 
+
+        // Initially hide close icon on larger screens
+        if (window.innerWidth > 768) {
+            hamburgerMenu.style.display = 'none';
+            closeIcon.style.display = 'none';
+        }
+
+        // Open Sidebar on small screens
+        hamburgerMenu.addEventListener('click', function(e) {
+            e.preventDefault();
+            sidebar.classList.add('open');
+            mainContent.classList.add('sidebar-open');
+            hamburgerMenu.style.display = 'none';
+            closeIcon.style.display = 'block';
+        });
+
+        // Close Sidebar on small screens
+        closeIcon.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            mainContent.classList.remove('sidebar-open');
+            hamburgerMenu.style.display = 'block';
+            closeIcon.style.display = 'none';
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                hamburgerMenu.style.display = 'none';
+                closeIcon.style.display = 'none';
+                sidebar.classList.remove('open');
+                mainContent.classList.remove('sidebar-open');
+            } else {
+                hamburgerMenu.style.display = 'block';
+                closeIcon.style.display = 'none';
+            }
+        });
+
+        // Fetch policy data and open modal
+        async function fetchAndOpenPolicyModal() {
+            // Show the modal with loading spinner
+            document.getElementById('policyModal').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
+            
+            const policyContentElement = document.getElementById('policyContent');
+            
+            try {
+                // Fetch policy data from API
+                const response = await fetch('/get_policy');
+
+                console.log(response)
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const policyData = await response.json();
+                
+                let policyHTML = `
+                    <h2><i class="fas fa-file-alt"></i> ${policyData.title || 'Company Policies'}</h2>
+                `;
+                
+                // Add general guidelines section if available
+                if (policyData.general_guidelines) {
+                    policyHTML += `
+                        <h3><i class="fas fa-book"></i> General Guidelines</h3>
+                        <p>${policyData.general_guidelines}</p>
+                    `;
+                }
+                
+                // Add attendance policy section if available
+                if (policyData.attendance_policy) {
+                    policyHTML += `
+                        <h3><i class="fas fa-user-clock"></i> Attendance Policy</h3>
+                        <p>${policyData.attendance_policy}</p>
+                    `;
+                }
+                
+                // Add leave policy section if available
+                if (policyData.leave_policy) {
+                    policyHTML += `
+                        <h3><i class="fas fa-umbrella-beach"></i> Leave Policy</h3>
+                        <p>${policyData.leave_policy}</p>
+                    `;
+                }
+                
+                // Add working hours section if available
+                if (policyData.working_hours && policyData.working_hours.length > 0) {
+                    policyHTML += `
+                        <div class="working-hours">
+                            <h3><i class="fas fa-business-time"></i> Office Working Hours</h3>
+                            <table>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Hours</th>
+                                    <th>Break</th>
+                                </tr>
+                    `;
+                    
+                    // Add each working day to the table
+                    policyData.working_hours.forEach(day => {
+                        policyHTML += `
+                            <tr>
+                                <td>${day.day}</td>
+                                <td>${day.hours}</td>
+                                <td>${day.break || 'No break'}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    policyHTML += `
+                            </table>
+                        </div>
+                    `;
+                }
+                
+                // Add any additional sections from the API
+                if (policyData.additional_sections && policyData.additional_sections.length > 0) {
+                    policyData.additional_sections.forEach(section => {
+                        policyHTML += `
+                            <h3><i class="fas fa-info-circle"></i> ${section.title}</h3>
+                            <p>${section.content}</p>
+                        `;
+                    });
+                }
+                
+                // Update the modal content
+                policyContentElement.innerHTML = policyHTML;
+                
+            } catch (error) {
+                console.error('Error fetching policy data:', error);
+                
+                // Show error message in the modal
+                policyContentElement.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        Unable to load policy data. Please try again later.
+                    </div>
+                `;
+            }
+        }
+
+        function closePolicyModal() {
+            document.getElementById('policyModal').style.display = 'none';
+            document.body.style.overflow = 'auto';  
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('policyModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto'; // Re-enable scrolling
+            }
+        }
+    </script>
+</body>
+
+</html>

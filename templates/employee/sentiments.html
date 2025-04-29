@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Sentiment Analysis Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', path='/sentiments.css') }}">
+    <style>
+        /* Fallback styles in case the external CSS doesn't load */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .back-btn {
+            margin-right: 20px;
+            text-decoration: none;
+            color: #333;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .feedback-container {
+            margin-bottom: 30px;
+        }
+        .feedback-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .sentiment-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        .sentiment-tag.positive {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+        .sentiment-tag.negative {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+        .charts-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .chart-wrapper {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .loading-indicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        @media (max-width: 768px) {
+            .charts-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="{{ url_for('fetch_details_employees') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+            <h1>Last 30 days Feedback Analysis</h1>
+        </header>
+        
+        <div class="controls">
+            <select id="filterSelect">
+                <option value="all">All Feedback</option>
+                <option value="positive">Positive Only</option>
+                <option value="negative">Negative Only</option>
+            </select>
+        </div>
+
+        <div id="loadingIndicator" class="loading-indicator">
+            Loading feedback data...
+        </div>
+
+        <div class="feedback-container">
+            <div class="feedback-list" id="feedbackList">
+                {% for feedback in feedback_data %}
+                    <div class="feedback-item" data-sentiment="{{ feedback.feedback_summary.split()[0].lower() }}">
+                        <div class="feedback-header">
+                            <span class="employee-name">{{ feedback.full_name }}</span>
+                            <span class="feedback-date">{{ feedback.created_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                        <div class="feedback-text">{{ feedback.message }}</div>
+                        <span class="sentiment-tag {% if 'Positive' in feedback.feedback_summary %}positive{% elif 'Negative' in feedback.feedback_summary %}negative{% endif %}">
+                            {{ feedback.feedback_summary }}
+                        </span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <canvas id="sentimentPieChart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="sentimentLineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hide loading indicator after content loads
+        document.getElementById('loadingIndicator').style.display = 'none';
+        
+        // Initialize sentiment pie chart
+        const sentimentData = {{ sentiment_data | tojson }};
+        const totalFeedback = sentimentData.positive + sentimentData.negative;
+        
+        const pieCtx = document.getElementById('sentimentPieChart').getContext('2d');
+        const sentimentPieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Positive', 'Negative'],
+                datasets: [{
+                    label: 'Feedback Sentiment Distribution',
+                    data: [sentimentData.positive, sentimentData.negative],
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderColor: ['#28a745', '#dc3545'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Sentiment Distribution'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                const percentage = (tooltipItem.raw / totalFeedback * 100).toFixed(1);
+                                return `${tooltipItem.label}: ${tooltipItem.raw} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Initialize sentiment trend line chart
+        const sentimentChanges = {{ sentiment_changes | tojson }};
+        
+        const lineCtx = document.getElementById('sentimentLineChart').getContext('2d');
+        const sentimentLineChart = new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: sentimentChanges.dates,  
+                datasets: [
+                    {
+                        label: 'Positive Feedback',
+                        data: sentimentChanges.positive, 
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                        fill: true,
+                        tension: 0.4,
+                    },
+                    {
+                        label: 'Negative Feedback',
+                        data: sentimentChanges.negative,  
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                        fill: true,
+                        tension: 0.4,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Sentiment Trends (30 Days)'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return `${tooltipItem.dataset.label}: ${tooltipItem.raw}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Feedback Count'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+       
+        // Filter feedback items based on selection
+        document.getElementById('filterSelect').addEventListener('change', function() {
+            const filterValue = this.value;
+            const feedbackItems = document.querySelectorAll('.feedback-item');
+
+            feedbackItems.forEach(item => {
+                const sentimentTag = item.querySelector('.sentiment-tag').textContent.toLowerCase();
+                
+                if (filterValue === 'all' || 
+                   (filterValue === 'positive' && sentimentTag.includes('positive')) || 
+                   (filterValue === 'negative' && sentimentTag.includes('negative'))) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+        
+        // Add debouncing to filter to prevent excessive execution
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+        
+        // Replace direct event handler with debounced version
+        const debouncedFilter = debounce(function() {
+            const filterValue = this.value;
+            const feedbackItems = document.querySelectorAll('.feedback-item');
+            
+            feedbackItems.forEach(item => {
+                const sentimentTag = item.querySelector('.sentiment-tag').textContent.toLowerCase();
+                
+                if (filterValue === 'all' || 
+                   (filterValue === 'positive' && sentimentTag.includes('positive')) || 
+                   (filterValue === 'negative' && sentimentTag.includes('negative'))) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }, 200);
+        
+        document.getElementById('filterSelect').addEventListener('change', debouncedFilter);
+    });
+    </script>
+</body>
+</html>

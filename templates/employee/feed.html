@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Instagram-like Feed</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', path='/feed.css') }}" />
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <a href="{{ back_url }}" class="back-button">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+        <h1>Chats</h1>
+        <div class="search-bar">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search contacts..."
+          />
+        </div>
+      </div>
+
+      <div class="contact-list" id="contactList">
+        {% for user in users %}
+        <a
+          href="/chatting?emp2_id={{ user.user_id }}"
+          class="contact"
+          data-user-id="{{ user.user_id }}"
+        >
+          <div class="avatar">{{ user.initials }}</div>
+          <div class="contact-info">
+            <div class="contact-name">{{ user.full_name }}</div>
+            <div class="contact-id">User id: {{ user.user_id }}</div>
+          </div>
+          {% if user.unread_count > 0 %}
+          <div class="unread-badge">{{ user.unread_count }}</div>
+          {% endif %}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </body>
+  <script>
+    const userId = "{{ logged_in_user_id }}";
+    const ws = new WebSocket(`ws://${window.location.host}/ws/${userId}`);
+    
+    // const ws = new WebSocket(
+    //   `wss://lemming-noted-cub.ngrok-free.app/ws/${userId}`
+    // );
+
+    ws.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      if (data.type === "new_message") {
+        const senderId = data.sender_id;
+        const unreadCount = data.unread_count;
+        const contactElement = document.querySelector(
+          `[data-user-id="${senderId}"]`
+        );
+        if (contactElement) {
+          const badge = contactElement.querySelector(".unread-badge");
+          if (unreadCount > 0) {
+            if (!badge) {
+              const newBadge = document.createElement("div");
+              newBadge.className = "unread-badge";
+              newBadge.textContent = unreadCount;
+              contactElement.appendChild(newBadge);
+            } else {
+              badge.textContent = unreadCount;
+            }
+          } else if (badge) {
+            badge.remove();
+          }
+        }
+      }
+    };
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const searchInput = document.getElementById("searchInput");
+      const contactList = document.getElementById("contactList");
+      const contacts = Array.from(
+        contactList.getElementsByClassName("contact")
+      );
+
+      // Search functionality
+      searchInput.addEventListener("input", function () {
+        const searchTerm = this.value.trim().toLowerCase();
+        let hasMatches = false;
+
+        contacts.forEach((contact) => {
+          const name = contact
+            .querySelector(".contact-name")
+            .textContent.toLowerCase();
+          const userId = contact
+            .querySelector(".contact-id")
+            .textContent.toLowerCase();
+          const match =
+            name.includes(searchTerm) || userId.includes(searchTerm);
+
+          contact.style.display = match ? "flex" : "none";
+          if (match) hasMatches = true;
+        });
+
+        // Scroll to top when searching
+        if (searchTerm.length > 0) {
+          contactList.scrollTop = 0;
+        }
+      });
+
+      function getRandomColor() {
+        const hue = Math.floor(Math.random() * 360);
+        return `hsl(${hue}, 70%, 50%)`;
+      }
+
+      function setAvatarColors() {
+        const avatars = document.querySelectorAll(".avatar");
+        avatars.forEach((avatar) => {
+          avatar.style.backgroundColor = getRandomColor();
+        });
+      }
+
+      // Set initial colors
+      setAvatarColors();
+
+      // Optionally, set new colors every time the page is loaded
+      window.addEventListener("load", setAvatarColors);
+
+      // Auto-scroll to bottom when new contacts are added
+      function scrollToBottom() {
+        contactList.scrollTop = contactList.scrollHeight;
+      }
+    });
+  </script>
+</html>

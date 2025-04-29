@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Department</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', path='/emp_page.css') }}">
+   
+</head>
+<body>
+    <div class="emp-container">
+        <header class="emp-header">
+            <a href="/emp_details" class="back-button">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1 class="title">
+                <i class="fas fa-brain"></i> {{ department_name }} Department
+            </h1>
+        </header>
+
+        <!-- Department Lead Section -->
+        {% if department_heads %}
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-user-tie"></i> Department Lead
+                </h2>
+            </div>
+            <div class="card-content">
+                {% for head in department_heads %}
+                <div class="lead-info">
+                    <div class="avatar" id="lead-avatar">{{ head.initials }}</div>
+                    <div class="lead-details">
+                        <h3>{{ head.full_name }}</h3>
+                        <p>{{ head.position }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-content">
+                <p>No department lead found.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Department Team Members Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-users"></i> Department Team Members
+                </h2>
+            </div>
+            <div class="card-content">
+                <div class="employee-grid">
+                    {% for member in department_members %}
+                    <div class="employee-card">
+                        <div class="employee-info">
+                            <div class="avatar" >{{ member.initials }}</div>
+                            <div class="employee-details">
+                                <h4>{{ member.full_name }}</h4>
+                                <p>{{ member.position }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+
+        function getRandomColor() {
+            const hue = Math.floor(Math.random() * 360);
+            return `hsl(${hue}, 70%, 50%)`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const leadAvatar = document.getElementById('lead-avatar');
+            if (leadAvatar) {
+                const leadName = document.querySelector('.lead-details h3').textContent;
+                leadAvatar.textContent = getInitials(leadName);
+                leadAvatar.style.backgroundColor = getRandomColor();
+            }
+
+            const employeeAvatars = document.querySelectorAll('.employee-avatar');
+            employeeAvatars.forEach(avatar => {
+                const name = avatar.nextElementSibling.querySelector('h4').textContent;
+                avatar.textContent = getInitials(name);
+                avatar.style.backgroundColor = getRandomColor();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Instagram-like Chat</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='/chatting.css') }}"
+    />
+  </head>
+
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">
+        <a href="{{ url_for('get_feed') }}" class="back-button">←</a>
+        <div class="avatar">{{ emp2_initials }}</div>
+        <div class="chat-header-info">
+          <h2>{{ emp2_name }}</h2>
+        </div>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="chat-input">
+        <input id="messageText" type="text" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </body>
+  <script>
+    const emp1_id = "{{ emp1_id }}";
+
+    const emp2_id = "{{ emp2_id }}";
+    const chatroom_id = "{{ chatroom_id }}";
+
+    console.log("emp1_id:", emp1_id);
+    console.log("emp2_id:", emp2_id);
+    console.log("chatroom_id:", chatroom_id);
+
+    // Initialize WebSocket connection
+    const ws = new WebSocket(`ws://localhost:8000/ws/${emp1_id}`);
+    
+    // const ws = new WebSocket(
+    //   `wss://lemming-noted-cub.ngrok-free.app/ws/${emp1_id}`
+    // );
+
+    ws.onopen = function () {
+      console.log("WebSocket connection established.");
+
+      // Load previous chat history when WebSocket is connected
+      loadChatHistory(chatroom_id); // Call the chat history API here
+    };
+    ws.onerror = function (error) {
+      console.error("WebSocket encountered an error:", error);
+    };
+
+    ws.onclose = function () {
+      console.warn("WebSocket connection closed.");
+    };
+
+    // Handle incoming WebSocket messages
+    // Handle incoming WebSocket messages
+    ws.onmessage = function (event) {
+      try {
+        const message = JSON.parse(event.data);
+
+        // Only handle chat_message type for message display
+        if (message.type === "chat_message") {
+          const messages = document.getElementById("messages");
+          const messageDiv = document.createElement("div");
+          messageDiv.classList.add(
+            "message",
+            message.sender_id === emp1_id ? "sent" : "received"
+          );
+
+          const messageContent = document.createElement("div");
+          messageContent.classList.add("message-content");
+          messageContent.textContent = message.content;
+
+          const messageStatus = document.createElement("div");
+
+          const messageTime = document.createElement("div");
+          messageTime.classList.add("message-time");
+
+          // Parse Nepal time correctly
+          const nepalTime = new Date(message.timestamp);
+          messageTime.textContent = nepalTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+
+          messageDiv.appendChild(messageContent);
+          messageDiv.appendChild(messageStatus);
+          messageDiv.appendChild(messageTime);
+          messages.appendChild(messageDiv);
+          messages.scrollTop = messages.scrollHeight;
+        }
+        // Add handling for other message types if needed
+        else if (message.type === "new_message") {
+          // Handle notifications separately
+          console.log("New message notification:", message);
+          // Update unread count here if needed
+        }
+      } catch (error) {
+        console.error("Error handling WebSocket message:", error);
+      }
+    };
+
+    // Load chat history from the server
+    async function loadChatHistory(chat_id) {
+      try {
+        console.log("Fetching chat history for chat_id:", chat_id);
+        const response = await fetch(`/chats/${chat_id}`);
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch chat history: ${response.statusText}`
+          );
+        }
+
+        const chatHistory = await response.json();
+        console.log("Chat history loaded:", chatHistory);
+
+        const messages = document.getElementById("messages");
+        messages.innerHTML = ""; // Clear existing messages
+
+        chatHistory.forEach((msg) => {
+          const messageDiv = document.createElement("div");
+          messageDiv.classList.add(
+            "message",
+            msg.sender_id === emp1_id ? "sent" : "received"
+          );
+
+          const messageContent = document.createElement("div");
+          messageContent.classList.add("message-content");
+          messageContent.textContent = msg.content;
+
+          const messageTime = document.createElement("div");
+          messageTime.classList.add("message-time");
+          messageTime.textContent = new Date(
+            msg.timestamp
+          ).toLocaleTimeString();
+
+          messageDiv.appendChild(messageContent);
+          messageDiv.appendChild(messageTime);
+          messages.appendChild(messageDiv);
+        });
+
+        messages.scrollTop = messages.scrollHeight; // Auto-scroll to the bottom
+      } catch (error) {
+        console.error("Error loading chat history:", error);
+      }
+    }
+
+    // Send a message to the server
+    function sendMessage() {
+      const input = document.getElementById("messageText");
+      const message = input.value;
+
+      if (!message) {
+        console.warn("No message entered.");
+        return;
+      }
+
+      const payload = {
+        chat_id: chatroom_id, // Ensure this is defined in your script or passed in
+        sender_id: emp1_id,
+        receiver_id: emp2_id,
+        content: message,
+      };
+
+      console.log("Sending message payload:", payload);
+
+      try {
+        ws.send(JSON.stringify(payload)); // Send message via WebSocket
+        console.log("Message sent successfully.");
+
+        // Update the UI immediately
+        const messages = document.getElementById("messages");
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", "sent");
+
+        const messageContent = document.createElement("div");
+        messageContent.classList.add("message-content");
+        messageContent.textContent = message;
+
+        const messageTime = document.createElement("div");
+        messageTime.classList.add("message-time");
+        messageTime.textContent = new Date().toLocaleTimeString();
+
+        messageDiv.appendChild(messageContent);
+        messageDiv.appendChild(messageTime);
+        messages.appendChild(messageDiv);
+        messages.scrollTop = messages.scrollHeight; // Auto-scroll to the bottom
+
+        input.value = ""; // Clear the input field
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
+    }
+
+    function getRandomColor() {
+      const hue = Math.floor(Math.random() * 360);
+      return `hsl(${hue}, 70%, 50%)`;
+    }
+
+    function setAvatarColors() {
+      const avatars = document.querySelectorAll(".avatar");
+      avatars.forEach((avatar) => {
+        avatar.style.backgroundColor = getRandomColor();
+      });
+    }
+
+    // Set initial colors
+    setAvatarColors();
+
+    // Optionally, set new colors every time the page is loaded
+    window.addEventListener("load", setAvatarColors);
+  </script>
+</html>

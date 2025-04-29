@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Update Company Policies</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #3a7bd5;
+        --secondary-color: #00d2ff;
+        --accent-color: #f44336;
+        --text-color: #333;
+        --light-gray: #f5f5f5;
+        --border-color: #ddd;
+        --success-color: #4caf50;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: #f9f9f9;
+        color: var(--text-color);
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .header h1 {
+        color: var(--primary-color);
+        font-size: 28px;
+      }
+
+      .back-btn {
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .back-btn:hover {
+        background-color: #d32f2f;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .form-container {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        margin-bottom: 30px;
+      }
+
+      .form-section {
+        margin-bottom: 25px;
+      }
+
+      .form-section:last-child {
+        margin-bottom: 0;
+      }
+
+      .form-section h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .form-section h2 i {
+        color: var(--secondary-color);
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group:last-child {
+        margin-bottom: 0;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #555;
+      }
+
+      textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        resize: vertical;
+        min-height: 120px;
+        font-size: 14px;
+        transition: border 0.3s ease;
+      }
+
+      textarea:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(58, 123, 213, 0.2);
+      }
+
+      .json-editor {
+        position: relative;
+      }
+
+      .json-editor .editor-toolbar {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .json-editor .editor-toolbar .format-btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .json-editor .editor-toolbar .format-btn:hover {
+        background-color: #2a6ac0;
+      }
+
+      .json-editor .editor-toolbar .template-btn {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .json-editor .editor-toolbar .template-btn:hover {
+        background-color: #5a6268;
+      }
+
+      .json-editor .json-error {
+        color: var(--accent-color);
+        font-size: 14px;
+        margin-top: 8px;
+        display: none;
+      }
+
+      .json-preview {
+        margin-top: 20px;
+        background-color: var(--light-gray);
+        border-radius: 4px;
+        padding: 15px;
+        display: none;
+      }
+
+      .json-preview h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
+        color: #555;
+      }
+
+      .json-preview .preview-content {
+        font-family: monospace;
+        white-space: pre-wrap;
+        font-size: 14px;
+        color: #333;
+      }
+
+      .working-hours-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        display: none;
+      }
+
+      .working-hours-table th,
+      .working-hours-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .working-hours-table th {
+        background-color: var(--light-gray);
+        font-weight: 600;
+      }
+
+      .submit-section {
+        margin-top: 30px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .submit-btn {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .submit-btn:active {
+        transform: translateY(0);
+      }
+
+      .submit-btn i {
+        margin-right: 8px;
+      }
+
+      .help-text {
+        font-size: 13px;
+        color: #777;
+        margin-top: 5px;
+      }
+
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        background-color: var(--success-color);
+        color: white;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transform: translateY(-100px);
+        opacity: 0;
+        transition: all 0.5s ease;
+        z-index: 1000;
+      }
+
+      .notification.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .notification i {
+        font-size: 20px;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 15px;
+        }
+
+        .form-container {
+          padding: 20px;
+        }
+
+        .header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 15px;
+        }
+
+        .back-btn {
+          align-self: flex-start;
+        }
+
+        .submit-section {
+          justify-content: center;
+        }
+
+        .submit-btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Update Company Policies</h1>
+        <a href="/dash" class="back-btn">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+      </div>
+
+      <div class="form-container">
+        <form id="policyForm" action="/update_policies" method="post">
+          <div class="form-section">
+            <h2><i class="fas fa-book"></i> General Guidelines</h2>
+            <div class="form-group">
+              <label for="general_guidelines"
+                >Define the company's code of conduct and general
+                expectations:</label
+              >
+              <textarea
+                id="general_guidelines"
+                name="general_guidelines"
+                required
+                placeholder="Enter general guidelines for all employees..."
+              >{{ general_guidelines }}</textarea>
+              <p class="help-text">
+                Include information about dress code, communication standards,
+                and ethical behavior.
+              </p>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h2><i class="fas fa-user-clock"></i> Attendance Policy</h2>
+
+            <div class="form-group">
+              <label for="attendance_policy"
+                >Define attendance expectations and reporting procedures:</label
+              >
+
+              <textarea
+                id="attendance_policy"
+                name="attendance_policy"
+                required
+                placeholder="Enter attendance policy details..."
+              >{{ attendance_policy }}</textarea>
+
+              <p class="help-text">
+                Include information about punctuality, absence reporting, and
+                consequences for non-compliance.
+              </p>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h2><i class="fas fa-umbrella-beach"></i> Leave Policy</h2>
+            <div class="form-group">
+              <label for="leave_policy"
+                >Define leave entitlements and request procedures:</label
+              >
+              <textarea
+                id="leave_policy"
+                name="leave_policy"
+                required
+                placeholder="Enter leave policy details..."
+              >{{ leave_policy }}</textarea>
+              <p class="help-text">
+                Include information about annual leave, sick leave, and special
+                leave categories.
+              </p>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h2><i class="fas fa-business-time"></i> Working Hours</h2>
+            <div class="form-group">
+              <div class="json-editor">
+                <div class="editor-toolbar">
+                  <label for="working_hours"
+                    >Define working hours for each day (JSON format):</label
+                  >
+                  <div>
+                    <button type="button" class="template-btn" id="templateBtn">
+                      <i class="fas fa-file-code"></i> Load Template
+                    </button>
+                    <button type="button" class="format-btn" id="formatBtn">
+                      <i class="fas fa-code"></i> Format JSON
+                    </button>
+                  </div>
+                </div>
+                <textarea
+                  id="working_hours"
+                  name="working_hours"
+                  required
+                  placeholder="Enter working hours in JSON format..."
+                >{{ working_hours }}</textarea>
+                <p class="help-text">
+                  Use JSON format to specify working hours for each day of the
+                  week.
+                </p>
+                <div class="json-error" id="jsonError">
+                  Invalid JSON format. Please check your input.
+                </div>
+              </div>
+
+              <div class="json-preview" id="jsonPreview">
+                <h3>Working Hours Preview:</h3>
+                <table class="working-hours-table" id="hoursTable">
+                  <thead>
+                    <tr>
+                      <th>Day</th>
+                      <th>Hours</th>
+                      <th>Break</th>
+                    </tr>
+                  </thead>
+                  
+                  <tbody id="hoursTableBody">
+                </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="submit-section">
+            <button type="submit" class="submit-btn">
+              <i class="fas fa-save"></i> Update Policies
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="notification" id="notification">
+      <i class="fas fa-check-circle"></i>
+      <span>Policies updated successfully!</span>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const workingHoursField = document.getElementById("working_hours");
+        const formatBtn = document.getElementById("formatBtn");
+        const templateBtn = document.getElementById("templateBtn");
+        const jsonError = document.getElementById("jsonError");
+        const jsonPreview = document.getElementById("jsonPreview");
+        const hoursTable = document.getElementById("hoursTable");
+        const hoursTableBody = document.getElementById("hoursTableBody");
+        const policyForm = document.getElementById("policyForm");
+        const notification = document.getElementById("notification");
+
+        const workingHoursTemplate = [
+          {
+            day: "Monday",
+            hours: "9:00 AM - 5:00 PM",
+            break: "1:00 PM - 2:00 PM",
+          },
+          {
+            day: "Wednesday",
+            hours: "9:00 AM - 5:00 PM",
+            break: "1:00 PM - 2:00 PM",
+          },
+          {
+            day: "Friday",
+            hours: "9:00 AM - 5:00 PM",
+            break: "1:00 PM - 2:00 PM",
+          },
+          {
+            day: "Saturday",
+            hours: "Closed",
+            break: "No break",
+          },
+          {
+            day: "Sunday",
+            hours: "Closed",
+            break: "No break",
+          },
+        ];
+
+        // Load template into the textarea
+        templateBtn.addEventListener("click", function () {
+          workingHoursField.value = JSON.stringify(
+            workingHoursTemplate,
+            null,
+            2
+          );
+          validateAndPreviewJSON();
+        });
+
+        // Format JSON in the textarea
+        formatBtn.addEventListener("click", function () {
+          try {
+            const jsonData = JSON.parse(workingHoursField.value);
+            workingHoursField.value = JSON.stringify(jsonData, null, 2);
+            jsonError.style.display = "none";
+            validateAndPreviewJSON();
+          } catch (error) {
+            jsonError.style.display = "block";
+            jsonPreview.style.display = "none";
+          }
+        });
+
+        // Validate and preview JSON when input changes
+        workingHoursField.addEventListener(
+          "input",
+          debounce(validateAndPreviewJSON, 500)
+        );
+
+        // Function to validate and preview JSON
+        function validateAndPreviewJSON() {
+          try {
+            if (!workingHoursField.value.trim()) {
+              jsonPreview.style.display = "none";
+              jsonError.style.display = "none";
+              return;
+            }
+
+            const jsonData = JSON.parse(workingHoursField.value);
+
+            // Check if it's an array
+            if (!Array.isArray(jsonData)) {
+              throw new Error("JSON must be an array of objects");
+            }
+
+            // Generate table rows
+            hoursTableBody.innerHTML = "";
+            jsonData.forEach((item) => {
+              const row = document.createElement("tr");
+
+              const dayCell = document.createElement("td");
+              dayCell.textContent = item.day || "-";
+              row.appendChild(dayCell);
+
+              const hoursCell = document.createElement("td");
+              hoursCell.textContent = item.hours || "-";
+              row.appendChild(hoursCell);
+
+              const breakCell = document.createElement("td");
+              breakCell.textContent = item.break || "-";
+              row.appendChild(breakCell);
+
+              hoursTableBody.appendChild(row);
+            });
+
+            jsonError.style.display = "none";
+            jsonPreview.style.display = "block";
+            hoursTable.style.display = "table";
+          } catch (error) {
+            jsonError.style.display = "block";
+            jsonPreview.style.display = "none";
+          }
+        }
+
+
+        // Debounce function to limit how often a function is called
+        function debounce(func, wait) {
+          let timeout;
+          return function () {
+            const context = this;
+            const args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(function () {
+              func.apply(context, args);
+            }, wait);
+          };
+        }
+      });
+    </script>
+  </body>
+</html>

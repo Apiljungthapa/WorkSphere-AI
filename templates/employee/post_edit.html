@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Post</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/post_edit.css') }}">
+    
+  </head>
+  <body>
+    <div class="container">
+      <h1>Edit Post</h1>
+      <form method="POST" action="/edit_post/{{ post.post_id }}">
+        <label for="content">Content:</label>
+        <textarea id="content" name="content" required>
+        {{ post.content }}</textarea
+        >
+
+        <div class="file-input">
+          <span class="file-name" id="fileName"></span>
+        </div>
+
+        <div class="button-group">
+          <a href="{{ url_for('employee_details_page') }}">
+            <button type="button">Cancel</button>
+          </a>
+          <button type="submit">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
