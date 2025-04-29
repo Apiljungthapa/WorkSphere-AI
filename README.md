@@ -71,6 +71,11 @@ graph TD
     B --> H[WebSocket Server]
     H --> I[Real-time Chat]
 ```
+🤖 **Setup sentiment analysis model**
+  ```bash
+  clone the model repo go inside the model main folder move the inner sentimentModel directory to the main project folder
+     git clone git clone https://huggingface.co/Jevvan123/sentimentmodel
+  ```
 
 ## 🛠 Installation Guide
 
