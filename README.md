@@ -60,12 +60,130 @@ A Final Year Project by **Apil Thapa** (London Met ID: 22067753)
 
 ---
 ## 🛠️ System Architecture  
-```mermaid  
-graph TD  
-    A[Frontend] -->|Jinja Templates| B(FastAPI Server)  
-    B --> C[MySQL Database]  
-    B --> D[AI Microservices]  
-    D --> E[Document Processor]  
-    D --> F[Face Recognition]  
-    D --> G[Sentiment Analyzer]  
-    B --> H[WebSocket Server]  
+```mermaid
+graph TD
+    A[Frontend - Jinja2 Templates] --> B[FastAPI Server]
+    B --> C[(MySQL Database)]
+    B --> D[AI Services Layer]
+    D --> E[Document Processor]
+    D --> F[Sentiment Analyzer]
+    D --> G[Slide Generator]
+    B --> H[WebSocket Server]
+    H --> I[Real-time Chat]
+```
+
+## 🛠 Installation Guide
+
+### Prerequisites
+- Python 3.8 or higher
+- MySQL Server 8.0+
+- XAMPP (for local development)
+- Git version control
+
+  
+### Step-by-Step Setup
+1. Clone the repository
+
+```bash
+git clone https://github.com/Apiljungthapa/WorkSphere-AI.git
+cd WorkSphere-AI
+```
+
+2. Create and activate virtual environment
+
+```bash
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Linux/Mac:
+source venv/bin/activate
+```
+
+3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+🔑 **Configure API key**
+  ```
+  5) Create a .env file in the root directory and add:
+    GOOGLE_API_KEY=your_api_key_here
+  ```
+  Get your API key from [Google AI Studio](https://aistudio.google.com/apikey)
+  
+
+## 💾 Database Setup
+
+1. Install and launch XAMPP from Apache Friends
+2. Start Apache and MySQL services
+3. Access phpMyAdmin at https://www.phpmyadmin.net/downloads/
+4. Create a new database named `ems2`
+5. Import the database schema:
+   - Select the `ems2` database
+   - Navigate to the Import tab
+   - Choose the `ems2.sql` file from the project directory
+   - Click Execute to import the schema
+
+## ⚙ Configuration
+
+1. Create a `.env` file in the root directory with the following content:
+
+```ini
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD= ''
+DB_NAME=ems2
+GOOGLE_API_KEY=your_actual_api_key_here
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SENDER_EMAIL=
+HR_SENDER_PASSWORD=
+MANAGER_SENDER_PASSWORD=
+```
+
+## 🚀 Running the Application
+
+1. Ensure XAMPP services (Apache and MySQL) are running
+2. Start the FastAPI server:
+
+```bash
+uvicorn main:app --reload
+```
+
+3. Access the application in your browser at:
+   - http://localhost:8000
+
+## 🔧 Technologies Used
+
+### Core Stack
+| Component | Technology |
+|-----------|------------|
+| Backend Framework | FastAPI (Python) |
+| Database | MySQL |
+| ORM | SQLAlchemy |
+| Real-time | WebSockets |
+
+### Frontend
+- Jinja2 Templating Engine
+- HTML5, CSS3, JavaScript
+- Bootstrap 5 for responsive design
+- Chart.js for data visualization
+
+### AI Components
+- HuggingFace Transformers (Sentiment Analysis)
+- Google Gemini API (Document Processing)
+- Custom ML models for analytics
+
+## 📜 License
+
+This project is licensed under the MIT License. See the LICENSE file for full details.
+
+---
+
+Developed by: Apil Thapa  
+Institution: London Metropolitan University  
+Student ID: 22067753  
+Supervisors: Mr. Alish Kc & Mr. Samrat Thapa  
+Academic Year: 2022-2023
+
