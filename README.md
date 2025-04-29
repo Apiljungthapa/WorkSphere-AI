@@ -13,7 +13,6 @@ A Final Year Project by **Apil Thapa** (London Met ID: 22067753)
 - 📊 Real-time task management & progress tracking
 - 📝 AI-powered document querying & summarization
 - 😊 Sentiment analysis of employee feedback
-- 📸 Facial recognition-based attendance system
 - 💬 Secure real-time chat with WebSocket integration
 
 ---
